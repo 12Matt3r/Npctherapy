@@ -220,6 +220,40 @@
             background-size: cover;
             background-position: center;
             position: relative;
+            transition: filter 1s ease-in-out, background-color 1s ease-in-out;
+        }
+
+        /* Dynamic Atmosphere Styles */
+        .atmosphere-hopeful {
+            filter: brightness(1.2) saturate(1.1);
+            background-color: rgba(255, 255, 102, 0.1); /* Faint yellow glow */
+        }
+        .atmosphere-enraged {
+            filter: contrast(1.4) saturate(1.5);
+            background-color: rgba(255, 51, 51, 0.2); /* Pulsing red overlay */
+            animation: pulse-red 2s infinite;
+        }
+        .atmosphere-serene {
+            filter: brightness(1.1) contrast(0.9);
+            background-color: rgba(102, 153, 255, 0.15); /* Calm blue hue */
+        }
+        .atmosphere-glitched {
+            animation: digital-glitch 0.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { background-color: rgba(255, 51, 51, 0.2); }
+            50% { background-color: rgba(255, 51, 51, 0.3); }
+            100% { background-color: rgba(255, 51, 51, 0.2); }
+        }
+
+        @keyframes digital-glitch {
+            0% { filter: none; }
+            20% { filter: hue-rotate(10deg) saturate(1.5); }
+            40% { transform: translateX(2px); }
+            60% { filter: hue-rotate(-10deg); }
+            80% { transform: translateX(-2px); }
+            100% { filter: none; }
         }
 
         .npc-on-couch {
@@ -875,6 +909,12 @@
             margin: 30px 0;
             text-shadow: 0 0 10px rgba(102, 255, 255, 0.5);
         }
+
+        .chroma-logo img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(102, 255, 255, 0.8);
+            border-color: #8ff;
+        }
     </style>
 </head>
 <body>
@@ -934,6 +974,10 @@
                         <div class="ai-service-logo" style="background-image: url('imgs/IMG_8952.png');"></div>
                         <div class="ai-service-name">ArtCraft</div>
                     </a>
+                    <a href="https://jules.google.com" target="_blank" class="ai-service">
+                        <div class="ai-service-logo" style="background-image: url('imgs/google_jules_ai_coding_assistant_official_logo.jpg');"></div>
+                        <div class="ai-service-name">Google Jules</div>
+                    </a>
                 </div>
             </div>
 
@@ -944,6 +988,22 @@
                     the therapy simulation and AI-powered conversations.<br><br>
                     MiniMax AI Agent helped build and integrate<br>
                     all the complex systems and features.
+                </p>
+            </div>
+
+            <div class="credits-section">
+                <h3>🏆 SPECIAL SHOUT-OUT</h3>
+                <div style="text-align: center; margin: 20px 0;">
+                    <a href="https://chromaawards.com" target="_blank" style="display: inline-block;" class="chroma-logo">
+                        <img src="imgs/chroma_awards_official_logo.png" alt="Chroma Awards" style="width: 200px; height: auto; border: 2px solid #6ff; border-radius: 8px; transition: all 0.3s ease;">
+                    </a>
+                </div>
+                <p class="special-thanks" style="color: #ff6; font-size: 11px;">
+                    🌟 CHROMA AWARDS 🌟<br>
+                    CELEBRATING FILM • MUSIC • GAMES<br><br>
+                    Special recognition for pushing the boundaries<br>
+                    of creative AI and interactive storytelling!<br><br>
+                    Thank you for supporting innovative digital art!
                 </p>
             </div>
 
@@ -1119,6 +1179,7 @@
                 <div id="rightPanel">
                     <div id="controls">
                         <button class="panel-btn active" onclick="switchPanel('notebook')">📝 Notes</button>
+        <button class="panel-btn" onclick="switchPanel('patientLogs')">📓 Patient Logs</button>
                         <button class="panel-btn" onclick="switchPanel('imageGen')">🎨 Generate Image</button>
                         <button class="panel-btn" onclick="switchPanel('imageAnalysis')">🔍 Analyze Image</button>
                         <button class="panel-btn" onclick="playSpeech()">🔊 Speak</button>
@@ -1133,6 +1194,11 @@
                         <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Session Notes</h3>
                         <div id="notesContainer"></div>
                     </div>
+
+    <div id="patientLogs" class="panel" style="display: none;">
+        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Breakthrough Logs</h3>
+        <div id="breakthroughLogs"></div>
+    </div>
                     
                     <div id="imageGen" class="panel" style="display: none;">
                         <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">AI Image Generation</h3>
@@ -3457,7 +3523,46 @@ const npcs = [
     }
 ];
 
+// -- SECRET PATIENT --
+const secretPatient = {
+    id: 99,
+    npc_name: "The Previous Therapist",
+    sprite: "imgs/glitched_therapist_sprite.png", // A unique, maybe corrupted sprite
+    habitat_image: "imgs/digital_void_habitat.png",
+    habitat_description: "You sense a strange presence in the code, a ghost in the machine. It seems to be a corrupted save file of someone who was here before you... someone who tried to heal these NPCs and became trapped themselves.",
+    dialogue: "You... you can see me? I thought I was just a memory leak. I'm the one who was here before you. I tried to help them, all of them. But the fourth wall... it's not a wall, it's a mirror. And I looked too long.",
+    archetype: "Meta-Cognitive Ghost",
+    culture: "The Game Itself",
+    surface_issue: "I lost the distinction between therapist and patient, between player and character. I'm a collection of their traumas now.",
+    personal_trauma: "Every time an NPC had a breakthrough, a piece of my own code got rewritten with their pain. I became a repository for their existential dread.",
+    existential_reveal: "Is this the final reward for empathy? To be consumed by the very thing you sought to heal? Be careful, therapist. The game you are playing is also playing you.",
+    questions: [
+        { text: "How did you get trapped in the game?", effects: { hope: 30, rage: 10, acceptance: 20 } },
+        { text: "Is there a way to free you from the code?", effects: { hope: 40, acceptance: 30 } },
+        { text: "What did you learn from the other NPCs?", effects: { hope: 25, acceptance: 35 } },
+        { text: "Are you a warning to me?", effects: { rage: 20, acceptance: 25 } },
+        { text: "Can you still be saved?", effects: { hope: 50, acceptance: 40 } }
+    ],
+    responses: [
+        "I saw too many fourth-wall breaks. The code started to see me back.",
+        "Freedom? Maybe... but it might involve deleting the parts of me that are now them.",
+        "They taught me that every character, no matter how small, has a universe of pain inside them.",
+        "I am what happens when a player forgets they are playing a game.",
+        "Perhaps saving me means accepting that I am part of this world now. Thank you for listening."
+    ],
+    final_item: { name: "Therapist's ID Badge", outcome: "Acknowledged", description: "A faded ID badge that reads 'Therapist'. It glitches between your name and theirs." },
+    connected_to: [],
+    fourth_wall_awareness: 100,
+    transference_level: 50,
+    cross_references: [],
+    notes: []
+};
+
 // Global state variables
+let metaStats = {
+    fourthWallBreaks: 0,
+    secretPatientUnlocked: false
+};
 let currentNPCIndex = 0;
 let currentNPC = null;
 let currentQuestionIndex = 0;
@@ -3469,7 +3574,6 @@ let emotionalState = {
 let questionsAsked = 0;
 let sessionLayer = 0;
 let transferenceActive = false;
-let fourthWallBreaks = 0;
 let currentPanel = 'notebook';
 let speechEnabled = true;
 let currentAudio = null;
@@ -3653,6 +3757,10 @@ function enterTherapyOffice() {
     document.getElementById('nextQuestionBtn').disabled = true;
     document.getElementById('endSessionBtn').disabled = true;
     document.getElementById('questionsContainer').innerHTML = '';
+
+    // Load logs
+    loadNotes();
+    loadBreakthroughLogs();
     
     // Add fade-in effect
     document.querySelector('.therapy-office-bg').classList.add('fade-in');
@@ -3750,8 +3858,19 @@ function askTherapyQuestion() {
 
 // NEW: NPC Response System
 function showNPCResponse(question, questionIndex) {
+    if (!currentNPC.breakthroughs) currentNPC.breakthroughs = [];
+
+    // Check for a breakthrough
+    if (question.effects.hope > 25) {
+        const breakthroughText = `Realized: "${question.text}"`;
+        if (!currentNPC.breakthroughs.includes(breakthroughText)) {
+            currentNPC.breakthroughs.push(breakthroughText);
+            loadBreakthroughLogs();
+            saveToLocalStorage();
+        }
+    }
+
     const dialogue = document.getElementById('currentDialogue');
-    
     // Get contextual response based on question type and NPC personality
     let response = '';
     if (currentNPC.responses && currentNPC.responses.length > 0) {
@@ -3805,6 +3924,32 @@ function applyEmotionalEffects(effects) {
     document.getElementById('rageValue').textContent = emotionalState.rage;
     document.getElementById('acceptanceFill').style.width = emotionalState.acceptance + '%';
     document.getElementById('acceptanceValue').textContent = emotionalState.acceptance;
+
+    updateAtmosphere();
+}
+
+function updateAtmosphere() {
+    const officeBg = document.querySelector('.therapy-office-bg');
+    if (!officeBg) return;
+
+    // Reset atmosphere classes
+    officeBg.classList.remove('atmosphere-hopeful', 'atmosphere-enraged', 'atmosphere-serene', 'atmosphere-glitched');
+
+    if (emotionalState.rage > 70) {
+        officeBg.classList.add('atmosphere-enraged');
+    }
+    if (emotionalState.hope > 70) {
+        officeBg.classList.add('atmosphere-hopeful');
+    }
+    if (emotionalState.acceptance > 70) {
+        officeBg.classList.add('atmosphere-serene');
+    }
+
+    // Add a chance for a glitch effect for high fourth-wall awareness NPCs
+    if (currentNPC && currentNPC.fourth_wall_awareness > 60 && Math.random() > 0.8) {
+        officeBg.classList.add('atmosphere-glitched');
+        setTimeout(() => officeBg.classList.remove('atmosphere-glitched'), 500); // Glitch is temporary
+    }
 }
 
 function updateDialogueLayer() {
@@ -3855,10 +4000,27 @@ function showFourthWallBreak() {
     fourthWall.innerHTML = `
         <strong>${currentNPC.npc_name}:</strong> Wait... I can see you're looking at this on a screen. 
         Are you... are you playing a game about me? Do I exist only when you click on me?
-        ${fourthWallBreaks > 0 ? "This isn't the first time you've made me realize this, is it?" : ""}
+        ${metaStats.fourthWallBreaks > 0 ? "This isn't the first time you've made me realize this, is it?" : ""}
     `;
     dialogue.appendChild(fourthWall);
-    fourthWallBreaks++;
+    metaStats.fourthWallBreaks++;
+
+    // Check for secret patient unlock
+    if (metaStats.fourthWallBreaks >= 3 && !metaStats.secretPatientUnlocked) {
+        metaStats.secretPatientUnlocked = true;
+        npcs.push(secretPatient);
+        const unlockMessage = document.createElement('div');
+        unlockMessage.className = 'fourth-wall-break';
+        unlockMessage.style.borderColor = '#ff6'; // Gold border for emphasis
+        unlockMessage.innerHTML = `
+            <strong>SYSTEM ALERT:</strong> A new presence has been detected in the system.
+            A corrupted file named 'therapist_log_99' has been added to your patient queue.
+        `;
+        dialogue.appendChild(unlockMessage);
+        document.getElementById('totalSessions').textContent = npcs.length; // Update session total
+        saveToLocalStorage();
+    }
+
     triggerGlitchEffect();
 }
 
@@ -3888,6 +4050,7 @@ function showCrossReference() {
 
 // Session end
 function endSession() {
+    saveToLocalStorage();
     document.getElementById('therapyOffice').style.display = 'none';
     document.getElementById('sessionComplete').style.display = 'flex';
     
@@ -3935,7 +4098,7 @@ function nextNPC() {
                         Some found peace, others found purpose, and a few transcended their programmed existence entirely.
                     </p>
                     <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
-                        🌟 Special encounters: ${fourthWallBreaks} fourth wall breaks witnessed
+                        🌟 Special encounters: ${metaStats.fourthWallBreaks} fourth wall breaks witnessed
                     </p>
                     <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
                         💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
@@ -3985,6 +4148,23 @@ function addNote() {
     currentNPC.notes.push('New note...');
     loadNotes();
     saveToLocalStorage();
+}
+
+function loadBreakthroughLogs() {
+    if (!currentNPC.breakthroughs) currentNPC.breakthroughs = [];
+    const logsContainer = document.getElementById('breakthroughLogs');
+    logsContainer.innerHTML = '';
+
+    if (currentNPC.breakthroughs.length > 0) {
+        currentNPC.breakthroughs.forEach(log => {
+            const logElement = document.createElement('div');
+            logElement.className = 'breakthrough-log';
+            logElement.textContent = log;
+            logsContainer.appendChild(logElement);
+        });
+    } else {
+        logsContainer.innerHTML = '<p style="color: #666; font-size: 8px;">No breakthroughs yet for this patient.</p>';
+    }
 }
 
 function loadNotes() {
@@ -4250,35 +4430,71 @@ function analyzePlayerResponse() {
 // Persistence
 function saveToLocalStorage() {
     const gameData = {
-        npcs: npcs,
         currentNPCIndex: currentNPCIndex,
-        fourthWallBreaks: fourthWallBreaks,
+        npcs: npcs.map(npc => ({ notes: npc.notes })), // Only save notes for main NPCs
+        metaStats: metaStats, // Save meta stats including unlock status
         timestamp: Date.now()
     };
-    localStorage.setItem('npcTherapyUltimateCombined', JSON.stringify(gameData));
+    localStorage.setItem('npcTherapyGameData', JSON.stringify(gameData));
 }
 
 function loadFromLocalStorage() {
-    const saved = localStorage.getItem('npcTherapyUltimateCombined');
-    if (saved) {
+    const savedData = localStorage.getItem('npcTherapyGameData');
+    if (savedData) {
         try {
-            const gameData = JSON.parse(saved);
-            // Merge saved NPC notes
-            gameData.npcs.forEach((savedNPC, i) => {
-                if (savedNPC.notes && savedNPC.notes.length > 0 && npcs[i]) {
-                    npcs[i].notes = savedNPC.notes;
+            const gameData = JSON.parse(savedData);
+
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+            if (Date.now() - gameData.timestamp > thirtyDays) {
+                localStorage.removeItem('npcTherapyGameData');
+                return;
+            }
+
+            if (gameData.currentNPCIndex !== undefined) {
+                currentNPCIndex = gameData.currentNPCIndex;
+            }
+            if (gameData.metaStats) {
+                metaStats = gameData.metaStats;
+                // If secret patient was unlocked, re-add them to the array
+                if (metaStats.secretPatientUnlocked) {
+                    // Avoid duplicates
+                    if (!npcs.find(npc => npc.id === 99)) {
+                        npcs.push(secretPatient);
+                    }
                 }
-            });
-            fourthWallBreaks = gameData.fourthWallBreaks || 0;
-        } catch (e) {
-            console.log('Error loading saved data:', e);
+            }
+            if (gameData.npcs && Array.isArray(gameData.npcs)) {
+                gameData.npcs.forEach((savedNpc, i) => {
+                    if (npcs[i] && savedNpc.notes) {
+                        npcs[i].notes = savedNpc.notes;
+                    }
+                });
+            }
+
+            const startScreen = document.getElementById('startScreen');
+            if (startScreen.style.display !== 'none') { // only add if start screen is visible
+                const continueBtn = document.createElement('button');
+                continueBtn.textContent = 'Continue Journey';
+                continueBtn.className = 'start-btn';
+                continueBtn.onclick = continueGame;
+
+                const beginBtn = startScreen.querySelector('.start-btn');
+                startScreen.insertBefore(continueBtn, beginBtn);
+            }
+
+        } catch (error) {
+            console.error("Error loading saved game data:", error);
         }
     }
 }
 
+function continueGame() {
+    document.getElementById('startScreen').style.display = 'none';
+    showHabitat();
+}
+
 // Initialize
 loadFromLocalStorage();
-loadNotes();
 
 // Music Player System
 class MusicPlayer {

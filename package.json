@@ -30,10 +30,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/12Matt3r/Npctherapy"
+    "url": "git+https://github.com/12Matt3r/Npctherapy.git"
   },
   "homepage": "https://github.com/12Matt3r/Npctherapy",
   "bugs": {
     "url": "https://github.com/12Matt3r/Npctherapy/issues"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
   }
 }
