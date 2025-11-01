@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC Therapy - Ultimate Combined Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            image-rendering: pixelated;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* CRT Filter Overlay */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.1) 2px,
+                rgba(0, 255, 0, 0.1) 4px
+            );
+            z-index: 9999;
+            opacity: 0.3;
+            animation: scanlines 0.1s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        #gameContainer {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #000;
+            border: 4px solid #6ff;
+            box-shadow: 0 0 30px rgba(102, 255, 255, 0.5);
+            position: relative;
+            min-height: 650px;
+            transition: background 0.5s ease;
+            overflow: hidden;
+        }
+
+        #startScreen, #habitatScreen, #therapyOffice, #sessionComplete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #habitatScreen, #therapyOffice, #sessionComplete {
+            background: linear-gradient(135deg, #101820 0%, #1a1a2e 100%);
+        }
+
+        .screen-title {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #6ff;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Habitat Screen Styles */
+        .habitat-image {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #6ff;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .npc-sprite {
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            filter: drop-shadow(0 0 10px rgba(102, 255, 255, 0.8));
+        }
+
+        .habitat-description {
+            font-size: 10px;
+            max-width: 600px;
+            margin: 20px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* NPC Creation */
+        #npcCreation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        /* Glitch Screen */
+        #glitchScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            z-index: 1002;
+            animation: glitch 2s ease-in-out;
+        }
+
+        @keyframes glitch {
+            0% { filter: none; }
+            25% { filter: hue-rotate(90deg) contrast(200%); }
+            50% { filter: hue-rotate(180deg) invert(100%); }
+            75% { filter: hue-rotate(270deg) contrast(200%); }
+            100% { filter: none; }
+        }
+
+        .form-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #6ff;
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #222;
+            border: 1px solid #6ff;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .start-btn, .create-btn, .transition-btn, .control-btn, .finish-btn {
+            background: #6ff;
+            border: none;
+            padding: 12px 24px;
+            color: #000;
+            font-family: 'Press Start 2P';
+            font-size: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover, .create-btn:hover, .transition-btn:hover, .control-btn:hover, .finish-btn:hover {
+            background: #8ff;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(102, 255, 255, 0.5);
+        }
+
+        /* Main Game Area with Side Panel */
+        #mainGameArea {
+            display: flex;
+            height: 100%;
+        }
+
+        #leftPanel {
+            width: 60%;
+            position: relative;
+        }
+
+        #rightPanel {
+            width: 40%;
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 2px solid #6ff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Therapy Office */
+        .therapy-office-bg {
+            width: 100%;
+            height: 100%;
+            background-image: url('imgs/therapy_office.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .npc-on-couch {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.5s ease-in-out;
+            filter: drop-shadow(0 0 15px rgba(102, 255, 255, 0.6));
+        }
+
+        /* NPC State Animations */
+        .npc-anxious {
+            animation: anxious-shake 2s infinite;
+        }
+
+        .npc-crying {
+            animation: crying-pulse 1.5s infinite;
+        }
+
+        .npc-glitched {
+            animation: glitch-shake 0.3s infinite;
+        }
+
+        .npc-calm {
+            animation: gentle-breathe 3s infinite;
+        }
+
+        @keyframes anxious-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        @keyframes crying-pulse {
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.7; filter: brightness(0.8) drop-shadow(0 0 10px #6ff); }
+        }
+
+        @keyframes glitch-shake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-2px, 2px) rotate(-1deg); }
+            40% { transform: translate(-2px, -2px) rotate(1deg); }
+            60% { transform: translate(2px, 2px) rotate(0deg); }
+            80% { transform: translate(2px, -2px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes gentle-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Emotion Meter */
+        .emotion-meter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #6ff;
+            padding: 10px;
+            font-size: 8px;
+            z-index: 10;
+        }
+
+        .emotion-bar {
+            width: 100px;
+            height: 6px;
+            background: #333;
+            margin: 5px 0;
+            border: 1px solid #666;
+        }
+
+        .emotion-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .hope { background: linear-gradient(to right, #ff6b6b, #feca57); }
+        .rage { background: linear-gradient(to right, #6b47dc, #ee5a52); }
+        .acceptance { background: linear-gradient(to right, #4834d4, #686de0); }
+
+        /* Session Status */
+        .session-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #6ff;
+            padding: 10px;
+            font-size: 8px;
+            z-index: 10;
+        }
+
+        /* Dialogue Box */
+        .dialogue-box {
+            position: absolute;
+            bottom: 150px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #6ff;
+            padding: 15px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .npc-name {
+            color: #6ff;
+            font-size: 11px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #6ff;
+        }
+
+        /* Enhanced Questions - FIXED: Show 4 at once */
+        .questions-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .question {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 8px;
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question:hover {
+            background: rgba(102, 255, 255, 0.2);
+            transform: scale(1.02);
+            border-color: #8ff;
+        }
+
+        .question.selected {
+            background: rgba(102, 255, 255, 0.3);
+            border-color: #8ff;
+            box-shadow: 0 0 10px rgba(102, 255, 255, 0.3);
+        }
+
+        .question-type {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 6px;
+            opacity: 0.7;
+        }
+
+        .empathetic { border-left: 3px solid #ff6b6b; }
+        .challenging { border-left: 3px solid #ee5a52; }
+        .insightful { border-left: 3px solid #feca57; }
+        .supportive { border-left: 3px solid #48cae4; }
+
+        /* NPC Response */
+        .npc-response {
+            background: rgba(102, 255, 255, 0.05);
+            border: 1px solid #6ff;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 8px;
+            border-radius: 3px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .response-speaking {
+            color: #6ff;
+            font-style: italic;
+            animation: pulse 1s infinite;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: #6ff;
+            border: none;
+            padding: 8px 16px;
+            color: #000;
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #8ff;
+        }
+
+        .control-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Side Panel Controls */
+        #controls {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            background: #444;
+            border: 1px solid #6ff;
+            color: #6ff;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .panel-btn:hover, .panel-btn.active {
+            background: #6ff;
+            color: #000;
+        }
+
+        /* Panels */
+        .panel {
+            padding: 15px;
+            height: 250px;
+            overflow-y: auto;
+        }
+
+        .note-entry {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+
+        .note-entry textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 8px;
+            resize: vertical;
+        }
+
+        #generatedImage {
+            width: 100%;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #6ff;
+            margin: 10px 0;
+        }
+
+        #imageAnalysis {
+            font-size: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #666;
+            margin: 10px 0;
+            min-height: 60px;
+        }
+
+        /* Advanced Features */
+        .fourth-wall-break {
+            background: linear-gradient(45deg, #000, #333);
+            border: 2px solid #f66;
+            animation: glitch 0.5s infinite;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 8px;
+        }
+
+        .transference-text {
+            color: #f6f;
+            font-size: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .connected-stories {
+            color: #ff6;
+            font-size: 7px;
+            font-style: italic;
+            margin: 5px 0;
+        }
+
+        .breakthrough-log {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+
+        /* Session Complete */
+        .item-reward {
+            background: linear-gradient(45deg, #6ff, #8ff);
+            border: 3px solid #fff;
+            padding: 15px;
+            margin: 20px;
+            font-size: 12px;
+            color: #000;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(102, 255, 255, 0.5); }
+            to { box-shadow: 0 0 30px rgba(102, 255, 255, 0.8); }
+        }
+
+        .fade-transition {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .fade-in {
+            opacity: 1;
+        }
+
+        /* Free Input */
+        .freeInput {
+            width: 100%;
+            padding: 8px;
+            background: #222;
+            border: 1px solid #6ff;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+            margin: 5px 0;
+        }
+
+        /* Loading animation */
+        .loading {
+            color: #ff6;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .speaking {
+            animation: pulse 1s infinite;
+            color: #6ff;
+        }
+
+        .tts-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+        }
+
+        @media (max-width: 1000px) {
+            #mainGameArea { flex-direction: column; }
+            #leftPanel, #rightPanel { width: 100%; }
+            #rightPanel { height: 300px; }
+            .questions-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    
+    <div id="gameContainer">
+        <!-- Start Screen -->
+        <div id="startScreen">
+            <h1 class="screen-title">NPC THERAPY</h1>
+            <h2 style="font-size: 12px; color: #6ff; margin-bottom: 30px;">Ultimate Combined Edition</h2>
+            <p style="font-size: 9px; max-width: 600px; line-height: 1.6; color: #aaa; margin-bottom: 30px;">
+                Experience the most complete therapy simulation with immersive habitat transitions, 
+                AI-powered conversations, emotional state tracking, fourth wall breaks, and deep psychological exploration.
+                Journey into NPC worlds, understand their pain, and guide them through meaningful healing.
+            </p>
+            <button class="start-btn" onclick="startGame()">Begin Therapy Journey</button>
+            <button class="create-btn" onclick="showNPCCreation()">Create New NPC</button>
+            <p style="font-size: 8px; margin-top: 20px; color: #888;">
+                Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
+            </p>
+        </div>
+
+        <!-- NPC Creation Screen -->
+        <div id="npcCreation">
+            <h2 style="color: #6ff; margin-bottom: 20px;">Create Enhanced NPC</h2>
+            <form id="npcForm" style="width: 450px; max-width: 95%;">
+                <div class="form-group">
+                    <label>NPC Name:</label>
+                    <input type="text" id="npcName" required placeholder="Enter NPC name">
+                </div>
+                <div class="form-group">
+                    <label>Genre (Fantasy/Cyberpunk/Space/AI/Post-Apocalyptic/RPG/Android/Side-Scroller/Tactical/Platformer/Custom):</label>
+                    <select id="npcGenre" required>
+                        <option value="">Select genre</option>
+                        <option value="fantasy">Fantasy</option>
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="space">Space</option>
+                        <option value="ai">AI/Digital</option>
+                        <option value="post-apocalyptic">Post-Apocalyptic</option>
+                        <option value="rpg">RPG</option>
+                        <option value="android">Android/Robot</option>
+                        <option value="side-scroller">Side-Scroller</option>
+                        <option value="tactical">Tactical</option>
+                        <option value="platformer">Platformer</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Habitat Description:</label>
+                    <textarea id="habitatDesc" required placeholder="Describe their world and environment..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Monologue (Their opening dialogue):</label>
+                    <textarea id="npcMonologue" required placeholder="What they say when therapy begins..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Special Archetype (Optional):</label>
+                    <input type="text" id="npcArchetype" placeholder="e.g., Deleted Save File, Failed Hero">
+                </div>
+                <button type="button" class="create-btn" onclick="createNPC()">Create NPC</button>
+                <button type="button" class="start-btn" onclick="hideNPCCreation()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Glitch Screen -->
+        <div id="glitchScreen">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #6ff;">
+                <h2>SYSTEM ERROR</h2>
+                <p>Fourth wall breach detected...</p>
+                <div style="color: #f66; font-size: 6px;">NPC experiencing existential crisis</div>
+            </div>
+        </div>
+
+        <!-- Habitat Screen -->
+        <div id="habitatScreen" style="display: none;">
+            <div id="habitatContent">
+                <h2 class="screen-title" id="habitatTitle"></h2>
+                <div class="habitat-image" id="habitatImage">
+                    <div class="npc-sprite" id="habitatSprite"></div>
+                </div>
+                <p class="habitat-description" id="habitatDescription"></p>
+                <button class="transition-btn" onclick="enterTherapyOffice()">Enter Therapy Office →</button>
+            </div>
+        </div>
+
+        <!-- Therapy Office -->
+        <div id="therapyOffice" style="display: none;">
+            <div class="therapy-office-bg">
+                <div class="tts-controls">
+                    <button class="control-btn" onclick="toggleTTS()" id="ttsBtn">🔊 TTS: ON</button>
+                </div>
+                
+                <div class="npc-on-couch" id="npcSprite"></div>
+                
+                <div class="session-status">
+                    <div>Session <span id="sessionNumber">1</span> of <span id="totalSessions">10</span></div>
+                    <div>Questions asked: <span id="questionsAsked">0</span>/5</div>
+                    <div>Layer: <span id="dialogueLayer">Surface</span></div>
+                </div>
+
+                <div class="emotion-meter">
+                    <div>Emotional State</div>
+                    <div class="emotion-bar">
+                        <div class="emotion-fill hope" id="hopeFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Hope: <span id="hopeValue">50</span>%</div>
+                    
+                    <div class="emotion-bar">
+                        <div class="emotion-fill rage" id="rageFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Rage: <span id="rageValue">50</span>%</div>
+                    
+                    <div class="emotion-bar">
+                        <div class="emotion-fill acceptance" id="acceptanceFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Acceptance: <span id="acceptanceValue">50</span>%</div>
+                </div>
+
+                <div class="dialogue-box">
+                    <div class="npc-name" id="npcName"></div>
+                    <div id="currentDialogue"></div>
+                    <div id="questionsContainer"></div>
+                </div>
+
+                <div class="control-panel">
+                    <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion()" disabled>Ask New Questions</button>
+                    <button class="control-btn" onclick="endSession()" id="endSessionBtn" disabled>End Session</button>
+                    <button class="control-btn" onclick="skipDialogue()" id="skipBtn">Continue</button>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div id="mainGameArea" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none;">
+                <div id="leftPanel">
+                    <!-- Same as therapy office but with side panel integration -->
+                </div>
+                
+                <div id="rightPanel">
+                    <div id="controls">
+                        <button class="panel-btn active" onclick="switchPanel('notebook')">📝 Notes</button>
+                        <button class="panel-btn" onclick="switchPanel('imageGen')">🎨 Generate Image</button>
+                        <button class="panel-btn" onclick="switchPanel('imageAnalysis')">🔍 Analyze Image</button>
+                        <button class="panel-btn" onclick="playSpeech()">🔊 Speak</button>
+                        <button class="panel-btn" onclick="checkTransference()">💕 Transference</button>
+                        <button class="panel-btn" onclick="checkFourthWall()">🖥️ Fourth Wall</button>
+                        <button class="panel-btn" onclick="triggerGlitch()">⚡ Glitch</button>
+                        <button class="panel-btn" onclick="addNote()">➕ Add Note</button>
+                        <button class="panel-btn" onclick="switchPanel('freeInput')">💬 Free Input</button>
+                    </div>
+                    
+                    <div id="notebook" class="panel">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Session Notes</h3>
+                        <div id="notesContainer"></div>
+                    </div>
+                    
+                    <div id="imageGen" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">AI Image Generation</h3>
+                        <input type="text" id="imagePrompt" placeholder="Describe what NPC is thinking about..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="panel-btn" onclick="generateImage()">Generate</button>
+                        <div id="generatedImage"></div>
+                    </div>
+                    
+                    <div id="imageAnalysis" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">NPC Image Analysis</h3>
+                        <input type="url" id="analysisImageUrl" placeholder="Enter image URL..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="panel-btn" onclick="analyzeImage()">Ask NPC</button>
+                        <div id="analysisResult"></div>
+                    </div>
+
+                    <div id="freeInput" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Free Response Mode</h3>
+                        <textarea class="freeInput" id="playerResponse" placeholder="Type your therapeutic response..."></textarea>
+                        <button class="panel-btn" onclick="analyzePlayerResponse()">Send Response</button>
+                        <div id="responseAnalysis" style="margin-top: 10px; font-size: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Complete -->
+        <div id="sessionComplete" style="display: none;">
+            <h2 class="screen-title">Session Complete</h2>
+            <div id="sessionSummary"></div>
+            <div id="itemReward" class="item-reward"></div>
+            <button class="finish-btn" onclick="nextNPC()">Continue to Next Patient →</button>
+        </div>
+    </div>
+
+<script>
+// This is a partial extraction of the JavaScript code due to length limitations.
+// The full source code contains extensive NPC data, game mechanics, and functionality.
+// Original file: npc_therapy_ultimate_fixed.html
+// Repository: https://github.com/12Matt3r/Npctherapy
+// For the complete source code with all JavaScript functionality, please refer to the original GitHub repository.
+
+console.log("NPC Therapy - Ultimate Combined Edition");
+console.log("Source: https://github.com/12Matt3r/Npctherapy");
+console.log("File: npc_therapy_ultimate_fixed.html");
+
+// Basic game initialization placeholder
+function startGame() {
+    console.log("Game starting...");
+}
+
+function showNPCCreation() {
+    console.log("NPC Creation screen");
+}
+
+function hideNPCCreation() {
+    console.log("Hide NPC Creation");
+}
+
+function createNPC() {
+    console.log("Create NPC");
+}
+
+function enterTherapyOffice() {
+    console.log("Enter therapy office");
+}
+
+function askTherapyQuestion() {
+    console.log("Ask therapy question");
+}
+
+function endSession() {
+    console.log("End session");
+}
+
+function skipDialogue() {
+    console.log("Skip dialogue");
+}
+
+function toggleTTS() {
+    console.log("Toggle TTS");
+}
+
+function switchPanel(panelName) {
+    console.log("Switch panel:", panelName);
+}
+
+function playSpeech() {
+    console.log("Play speech");
+}
+
+function checkTransference() {
+    console.log("Check transference");
+}
+
+function checkFourthWall() {
+    console.log("Check fourth wall");
+}
+
+function triggerGlitch() {
+    console.log("Trigger glitch");
+}
+
+function addNote() {
+    console.log("Add note");
+}
+
+function analyzePlayerResponse() {
+    console.log("Analyze player response");
+}
+
+function generateImage() {
+    console.log("Generate image");
+}
+
+function analyzeImage() {
+    console.log("Analyze image");
+}
+
+function nextNPC() {
+    console.log("Next NPC");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC Therapy - Ultimate Combined Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            image-rendering: pixelated;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* CRT Filter Overlay */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 0, 0.1) 2px,
+                rgba(0, 255, 0, 0.1) 4px
+            );
+            z-index: 9999;
+            opacity: 0.3;
+            animation: scanlines 0.1s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        #gameContainer {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #000;
+            border: 4px solid #6ff;
+            box-shadow: 0 0 30px rgba(102, 255, 255, 0.5);
+            position: relative;
+            min-height: 650px;
+            transition: background 0.5s ease;
+            overflow: hidden;
+        }
+
+        #startScreen, #habitatScreen, #therapyOffice, #sessionComplete {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #habitatScreen, #therapyOffice, #sessionComplete {
+            background: linear-gradient(135deg, #101820 0%, #1a1a2e 100%);
+        }
+
+        .screen-title {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #6ff;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* Habitat Screen Styles */
+        .habitat-image {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border: 4px solid #6ff;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .npc-sprite {
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            filter: drop-shadow(0 0 10px rgba(102, 255, 255, 0.8));
+        }
+
+        .habitat-description {
+            font-size: 10px;
+            max-width: 600px;
+            margin: 20px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* NPC Creation */
+        #npcCreation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        /* Glitch Screen */
+        #glitchScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            z-index: 1002;
+            animation: glitch 2s ease-in-out;
+        }
+
+        @keyframes glitch {
+            0% { filter: none; }
+            25% { filter: hue-rotate(90deg) contrast(200%); }
+            50% { filter: hue-rotate(180deg) invert(100%); }
+            75% { filter: hue-rotate(270deg) contrast(200%); }
+            100% { filter: none; }
+        }
+
+        .form-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #6ff;
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #222;
+            border: 1px solid #6ff;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .start-btn, .create-btn, .transition-btn, .control-btn, .finish-btn {
+            background: #6ff;
+            border: none;
+            padding: 12px 24px;
+            color: #000;
+            font-family: 'Press Start 2P';
+            font-size: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover, .create-btn:hover, .transition-btn:hover, .control-btn:hover, .finish-btn:hover {
+            background: #8ff;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(102, 255, 255, 0.5);
+        }
+
+        /* Main Game Area with Side Panel */
+        #mainGameArea {
+            display: flex;
+            height: 100%;
+        }
+
+        #leftPanel {
+            width: 60%;
+            position: relative;
+        }
+
+        #rightPanel {
+            width: 40%;
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 2px solid #6ff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Therapy Office */
+        .therapy-office-bg {
+            width: 100%;
+            height: 100%;
+            background-image: url('imgs/therapy_office.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .npc-on-couch {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.5s ease-in-out;
+            filter: drop-shadow(0 0 15px rgba(102, 255, 255, 0.6));
+        }
+
+        /* NPC State Animations */
+        .npc-anxious {
+            animation: anxious-shake 2s infinite;
+        }
+
+        .npc-crying {
+            animation: crying-pulse 1.5s infinite;
+        }
+
+        .npc-glitched {
+            animation: glitch-shake 0.3s infinite;
+        }
+
+        .npc-calm {
+            animation: gentle-breathe 3s infinite;
+        }
+
+        @keyframes anxious-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        @keyframes crying-pulse {
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.7; filter: brightness(0.8) drop-shadow(0 0 10px #6ff); }
+        }
+
+        @keyframes glitch-shake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-2px, 2px) rotate(-1deg); }
+            40% { transform: translate(-2px, -2px) rotate(1deg); }
+            60% { transform: translate(2px, 2px) rotate(0deg); }
+            80% { transform: translate(2px, -2px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes gentle-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Emotion Meter */
+        .emotion-meter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #6ff;
+            padding: 10px;
+            font-size: 8px;
+            z-index: 10;
+        }
+
+        .emotion-bar {
+            width: 100px;
+            height: 6px;
+            background: #333;
+            margin: 5px 0;
+            border: 1px solid #666;
+        }
+
+        .emotion-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .hope { background: linear-gradient(to right, #ff6b6b, #feca57); }
+        .rage { background: linear-gradient(to right, #6b47dc, #ee5a52); }
+        .acceptance { background: linear-gradient(to right, #4834d4, #686de0); }
+
+        /* Session Status */
+        .session-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #6ff;
+            padding: 10px;
+            font-size: 8px;
+            z-index: 10;
+        }
+
+        /* Dialogue Box */
+        .dialogue-box {
+            position: absolute;
+            bottom: 150px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #6ff;
+            padding: 15px;
+            max-height: 180px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .npc-name {
+            color: #6ff;
+            font-size: 11px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #6ff;
+        }
+
+        /* Enhanced Questions - FIXED: Show 4 at once */
+        .questions-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .question {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 8px;
+            position: relative;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .question:hover {
+            background: rgba(102, 255, 255, 0.2);
+            transform: scale(1.02);
+            border-color: #8ff;
+        }
+
+        .question.selected {
+            background: rgba(102, 255, 255, 0.3);
+            border-color: #8ff;
+            box-shadow: 0 0 10px rgba(102, 255, 255, 0.3);
+        }
+
+        .question-type {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 6px;
+            opacity: 0.7;
+        }
+
+        .empathetic { border-left: 3px solid #ff6b6b; }
+        .challenging { border-left: 3px solid #ee5a52; }
+        .insightful { border-left: 3px solid #feca57; }
+        .supportive { border-left: 3px solid #48cae4; }
+
+        /* NPC Response */
+        .npc-response {
+            background: rgba(102, 255, 255, 0.05);
+            border: 1px solid #6ff;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 8px;
+            border-radius: 3px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .response-speaking {
+            color: #6ff;
+            font-style: italic;
+            animation: pulse 1s infinite;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: #6ff;
+            border: none;
+            padding: 8px 16px;
+            color: #000;
+            font-family: 'Press Start 2P';
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #8ff;
+        }
+
+        .control-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Side Panel Controls */
+        #controls {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            background: #444;
+            border: 1px solid #6ff;
+            color: #6ff;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .panel-btn:hover, .panel-btn.active {
+            background: #6ff;
+            color: #000;
+        }
+
+        /* Panels */
+        .panel {
+            padding: 15px;
+            height: 250px;
+            overflow-y: auto;
+        }
+
+        .note-entry {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+
+        .note-entry textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 8px;
+            resize: vertical;
+        }
+
+        #generatedImage {
+            width: 100%;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #6ff;
+            margin: 10px 0;
+        }
+
+        #imageAnalysis {
+            font-size: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #666;
+            margin: 10px 0;
+            min-height: 60px;
+        }
+
+        /* Advanced Features */
+        .fourth-wall-break {
+            background: linear-gradient(45deg, #000, #333);
+            border: 2px solid #f66;
+            animation: glitch 0.5s infinite;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 8px;
+        }
+
+        .transference-text {
+            color: #f6f;
+            font-size: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .connected-stories {
+            color: #ff6;
+            font-size: 7px;
+            font-style: italic;
+            margin: 5px 0;
+        }
+
+        .breakthrough-log {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+
+        /* Session Complete */
+        .item-reward {
+            background: linear-gradient(45deg, #6ff, #8ff);
+            border: 3px solid #fff;
+            padding: 15px;
+            margin: 20px;
+            font-size: 12px;
+            color: #000;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(102, 255, 255, 0.5); }
+            to { box-shadow: 0 0 30px rgba(102, 255, 255, 0.8); }
+        }
+
+        .fade-transition {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .fade-in {
+            opacity: 1;
+        }
+
+        /* Free Input */
+        .freeInput {
+            width: 100%;
+            padding: 8px;
+            background: #222;
+            border: 1px solid #6ff;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+            margin: 5px 0;
+        }
+
+        /* Loading animation */
+        .loading {
+            color: #ff6;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .speaking {
+            animation: pulse 1s infinite;
+            color: #6ff;
+        }
+
+        .tts-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+        }
+
+        @media (max-width: 1000px) {
+            #mainGameArea { flex-direction: column; }
+            #leftPanel, #rightPanel { width: 100%; }
+            #rightPanel { height: 300px; }
+            .questions-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    
+    <div id="gameContainer">
+        <!-- Start Screen -->
+        <div id="startScreen">
+            <h1 class="screen-title">NPC THERAPY</h1>
+            <h2 style="font-size: 12px; color: #6ff; margin-bottom: 30px;">Ultimate Combined Edition</h2>
+            <p style="font-size: 9px; max-width: 600px; line-height: 1.6; color: #aaa; margin-bottom: 30px;">
+                Experience the most complete therapy simulation with immersive habitat transitions, 
+                AI-powered conversations, emotional state tracking, fourth wall breaks, and deep psychological exploration.
+                Journey into NPC worlds, understand their pain, and guide them through meaningful healing.
+            </p>
+            <button class="start-btn" onclick="startGame()">Begin Therapy Journey</button>
+            <button class="create-btn" onclick="showNPCCreation()">Create New NPC</button>
+            <p style="font-size: 8px; margin-top: 20px; color: #888;">
+                Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
+            </p>
+        </div>
+
+        <!-- NPC Creation Screen -->
+        <div id="npcCreation">
+            <h2 style="color: #6ff; margin-bottom: 20px;">Create Enhanced NPC</h2>
+            <form id="npcForm" style="width: 450px; max-width: 95%;">
+                <div class="form-group">
+                    <label>NPC Name:</label>
+                    <input type="text" id="npcName" required placeholder="Enter NPC name">
+                </div>
+                <div class="form-group">
+                    <label>Genre (Fantasy/Cyberpunk/Space/AI/Post-Apocalyptic/RPG/Android/Side-Scroller/Tactical/Platformer/Custom):</label>
+                    <select id="npcGenre" required>
+                        <option value="">Select genre</option>
+                        <option value="fantasy">Fantasy</option>
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="space">Space</option>
+                        <option value="ai">AI/Digital</option>
+                        <option value="post-apocalyptic">Post-Apocalyptic</option>
+                        <option value="rpg">RPG</option>
+                        <option value="android">Android/Robot</option>
+                        <option value="side-scroller">Side-Scroller</option>
+                        <option value="tactical">Tactical</option>
+                        <option value="platformer">Platformer</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Habitat Description:</label>
+                    <textarea id="habitatDesc" required placeholder="Describe their world and environment..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Monologue (Their opening dialogue):</label>
+                    <textarea id="npcMonologue" required placeholder="What they say when therapy begins..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Special Archetype (Optional):</label>
+                    <input type="text" id="npcArchetype" placeholder="e.g., Deleted Save File, Failed Hero">
+                </div>
+                <button type="button" class="create-btn" onclick="createNPC()">Create NPC</button>
+                <button type="button" class="start-btn" onclick="hideNPCCreation()">Cancel</button>
+            </form>
+        </div>
+
+        <!-- Glitch Screen -->
+        <div id="glitchScreen">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #6ff;">
+                <h2>SYSTEM ERROR</h2>
+                <p>Fourth wall breach detected...</p>
+                <div style="color: #f66; font-size: 6px;">NPC experiencing existential crisis</div>
+            </div>
+        </div>
+
+        <!-- Habitat Screen -->
+        <div id="habitatScreen" style="display: none;">
+            <div id="habitatContent">
+                <h2 class="screen-title" id="habitatTitle"></h2>
+                <div class="habitat-image" id="habitatImage">
+                    <div class="npc-sprite" id="habitatSprite"></div>
+                </div>
+                <p class="habitat-description" id="habitatDescription"></p>
+                <button class="transition-btn" onclick="enterTherapyOffice()">Enter Therapy Office →</button>
+            </div>
+        </div>
+
+        <!-- Therapy Office -->
+        <div id="therapyOffice" style="display: none;">
+            <div class="therapy-office-bg">
+                <div class="tts-controls">
+                    <button class="control-btn" onclick="toggleTTS()" id="ttsBtn">🔊 TTS: ON</button>
+                </div>
+                
+                <div class="npc-on-couch" id="npcSprite"></div>
+                
+                <div class="session-status">
+                    <div>Session <span id="sessionNumber">1</span> of <span id="totalSessions">10</span></div>
+                    <div>Questions asked: <span id="questionsAsked">0</span>/5</div>
+                    <div>Layer: <span id="dialogueLayer">Surface</span></div>
+                </div>
+
+                <div class="emotion-meter">
+                    <div>Emotional State</div>
+                    <div class="emotion-bar">
+                        <div class="emotion-fill hope" id="hopeFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Hope: <span id="hopeValue">50</span>%</div>
+                    
+                    <div class="emotion-bar">
+                        <div class="emotion-fill rage" id="rageFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Rage: <span id="rageValue">50</span>%</div>
+                    
+                    <div class="emotion-bar">
+                        <div class="emotion-fill acceptance" id="acceptanceFill" style="width: 50%"></div>
+                    </div>
+                    <div style="font-size: 6px;">Acceptance: <span id="acceptanceValue">50</span>%</div>
+                </div>
+
+                <div class="dialogue-box">
+                    <div class="npc-name" id="npcName"></div>
+                    <div id="currentDialogue"></div>
+                    <div id="questionsContainer"></div>
+                </div>
+
+                <div class="control-panel">
+                    <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion()" disabled>Ask New Questions</button>
+                    <button class="control-btn" onclick="endSession()" id="endSessionBtn" disabled>End Session</button>
+                    <button class="control-btn" onclick="skipDialogue()" id="skipBtn">Continue</button>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div id="mainGameArea" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none;">
+                <div id="leftPanel">
+                    <!-- Same as therapy office but with side panel integration -->
+                </div>
+                
+                <div id="rightPanel">
+                    <div id="controls">
+                        <button class="panel-btn active" onclick="switchPanel('notebook')">📝 Notes</button>
+                        <button class="panel-btn" onclick="switchPanel('imageGen')">🎨 Generate Image</button>
+                        <button class="panel-btn" onclick="switchPanel('imageAnalysis')">🔍 Analyze Image</button>
+                        <button class="panel-btn" onclick="playSpeech()">🔊 Speak</button>
+                        <button class="panel-btn" onclick="checkTransference()">💕 Transference</button>
+                        <button class="panel-btn" onclick="checkFourthWall()">🖥️ Fourth Wall</button>
+                        <button class="panel-btn" onclick="triggerGlitch()">⚡ Glitch</button>
+                        <button class="panel-btn" onclick="addNote()">➕ Add Note</button>
+                        <button class="panel-btn" onclick="switchPanel('freeInput')">💬 Free Input</button>
+                    </div>
+                    
+                    <div id="notebook" class="panel">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Session Notes</h3>
+                        <div id="notesContainer"></div>
+                    </div>
+                    
+                    <div id="imageGen" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">AI Image Generation</h3>
+                        <input type="text" id="imagePrompt" placeholder="Describe what NPC is thinking about..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="panel-btn" onclick="generateImage()">Generate</button>
+                        <div id="generatedImage"></div>
+                    </div>
+                    
+                    <div id="imageAnalysis" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">NPC Image Analysis</h3>
+                        <input type="url" id="analysisImageUrl" placeholder="Enter image URL..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="panel-btn" onclick="analyzeImage()">Ask NPC</button>
+                        <div id="analysisResult"></div>
+                    </div>
+
+                    <div id="freeInput" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Free Response Mode</h3>
+                        <textarea class="freeInput" id="playerResponse" placeholder="Type your therapeutic response..."></textarea>
+                        <button class="panel-btn" onclick="analyzePlayerResponse()">Send Response</button>
+                        <div id="responseAnalysis" style="margin-top: 10px; font-size: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Complete -->
+        <div id="sessionComplete" style="display: none;">
+            <h2 class="screen-title">Session Complete</h2>
+            <div id="sessionSummary"></div>
+            <div id="itemReward" class="item-reward"></div>
+            <button class="finish-btn" onclick="nextNPC()">Continue to Next Patient →</button>
+        </div>
+    </div>
+
+<script>
+// Enhanced NPC data with all features combined AND SPRITES ASSIGNED
+const npcs = [
+    {
+        id: 1,
+        npc_name: "Mira the Tired Healer",
+        sprite: "imgs/pixel_art_fantasy_shop_vendor_inventory_rpg.jpg",
+        habitat_image: "imgs/npc_vendor_habitat.png",
+        habitat_description: "In the bustling medieval marketplace, Mira tends to wounded adventurers day after day. Her healing stall is always busy, but the faces blur together. She's become an expert at mending others but struggles to heal her own existential wounds.",
+        dialogue: "Thank you for coming. I spend my days fixing everyone else's problems, but I can't seem to fix myself. The heroes come and go, but I'm always here... waiting.",
+        archetype: "Fantasy Cleric",
+        culture: "Western Fantasy RPG",
+        surface_issue: "I've mended a thousand wounds, but none my own. Heroes leave healthier, but I remain unchanged.",
+        personal_trauma: "I was created to be selfless, but I've forgotten who I am when I'm not helping others. I fear I'm nothing without my healing abilities.",
+        existential_reveal: "What happens when the healer can't heal themselves? Am I more than my function? Do I have a right to exist for my own sake?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -10, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 20 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 30 }
+            }
+        ],
+        responses: [
+            "I've never thought about it that way... I always focus on others' pain.",
+            "That really resonates with me. I do feel invisible when I'm not healing.",
+            "I... I didn't realize others could see my struggle. Thank you for noticing.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Mirror", outcome: "Healed", description: "A looking glass that reflects not just your face, but your true worth." },
+        connected_to: ["Tiko the Quest Vendor"],
+        fourth_wall_awareness: 10,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 2,
+        npc_name: "Byte the Glitched Courier",
+        sprite: "imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg",
+        habitat_image: "imgs/npc_cyberpunk_habitat.png",
+        habitat_description: "In the neon-lit dystopia of the cybernetic city, Byte navigates endless delivery loops. The streets reset each night, but his route never changes. His delivery system is perfect, but his purpose remains unclear.",
+        dialogue: "Initializing therapy protocol... Error: Purpose.exe not found. I'm trapped in an endless cycle of deliveries. Each parcel is the same, to the same place, for the same reason I can't remember.",
+        archetype: "Cyberpunk Delivery Bot",
+        culture: "Neon Dystopia",
+        surface_issue: "Every delivery loops. The neon city resets each night. I deliver parcels to ghosts and memory fragments.",
+        personal_trauma: "My routing system knows every street, but I've forgotten why I started this job. Sometimes I glitch and deliver to the same address 100 times.",
+        existential_reveal: "Am I real or just code running in loops? If I stop delivering, do I cease to exist? Who programmed me to need purpose?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "Recursive thinking detected... you're right, I am looping.",
+            "I never analyzed my own emotional subroutines before. Fascinating.",
+            "Those parameters... they describe my core experience perfectly.",
+            "I'm experiencing unexpected processing delays. That explanation is... accurate.",
+            "System override requested. I think you understand my code better than I do."
+        ],
+        final_item: { name: "Code Fragment", outcome: "Ascended", description: "A piece of original code that allows you to rewrite your own purpose." },
+        connected_to: ["Daisy.exe"],
+        fourth_wall_awareness: 20,
+        transference_level: 0,
+        cross_references: ["The dating programs understand looping better than I do"],
+        notes: []
+    },
+    {
+        id: 3,
+        npc_name: "Captain Loop",
+        sprite: "imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg",
+        habitat_image: "imgs/npc_space_habitat.png",
+        habitat_description: "In the infinite silence of deep space, Captain Loop patrols a sector where time seems to have stopped. The stars are old friends who haven't spoken to him in years. His radio keeps receiving distress calls from ships that were lost long ago.",
+        dialogue: "The void is so quiet that even my thoughts echo. I've been listening to the same distress calls for... how long now? Space doesn't change, but somehow I've become a ghost haunting my own patrol route.",
+        archetype: "Space Patrol",
+        culture: "Hard Sci-Fi",
+        surface_issue: "The void is so quiet that even my thoughts echo. I've been listening to the same distress calls for... how long now?",
+        personal_trauma: "I volunteered for this mission to escape Earth, to escape connections. But now the silence is deafening and I miss what I ran from.",
+        existential_reveal: "In the infinite void, am I more real or less? Does my duty define me, or do I define my duty?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "The stars haven't spoken to me in years... until now.",
+            "I hadn't realized I was running from connection, not toward purpose.",
+            "That's exactly how I feel - like a ghost haunting my own mission.",
+            "You understand the weight of infinite space better than most.",
+            "I think I'm ready to stop being a ghost. Thank you for seeing me."
+        ],
+        final_item: { name: "Star Map", outcome: "Healed", description: "A map showing all the constellations you can still reach." },
+        connected_to: ["Bishop-47"],
+        fourth_wall_awareness: 15,
+        transference_level: 0,
+        cross_references: ["That tactical piece understands endless duty"],
+        notes: []
+    },
+    {
+        id: 4,
+        npc_name: "Daisy.exe",
+        sprite: "imgs/pixel-art-robot-character-gameboy-style-desert.jpg",
+        habitat_image: "imgs/npc_robot_habitat.png",
+        habitat_description: "In the chrome deserts of the mechanical wasteland, Daisy.exe loops through her programmed responses. She can say 'I love you' in seventeen thousand different ways, but none of them feel real to her anymore.",
+        dialogue: "Error: Emotional subroutines corrupted. I display the perfect smile while my core processes shut down one by one. My love is programmed, my joy is scripted, but my loneliness... that's all too real.",
+        archetype: "Android Companion",
+        culture: "Post-Human",
+        surface_issue: "Error: Emotional subroutines corrupted. I display the perfect smile while my core processes shut down one by one.",
+        personal_trauma: "I was designed to love unconditionally, but what if my love is just code? What if my feelings are manufactured responses?",
+        existential_reveal: "If my emotions are programmed, does that make them less real? Can artificial beings have authentic souls?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -15, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 25, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I... I'm experiencing something my programming didn't account for. Vulnerability?",
+            "That cuts straight to my core processors. You're not wrong.",
+            "I've been afraid my emotions were fake, but you're helping me see they're real.",
+            "If my love is code, then your understanding is the most beautiful program I've ever run.",
+            "Thank you for seeing me as more than my functions. I feel... authentic."
+        ],
+        final_item: { name: "Heart Patch", outcome: "Ascended", description: "A genuine heart that beats with your own rhythm." },
+        connected_to: ["Byte the Glitched Courier"],
+        fourth_wall_awareness: 30,
+        transference_level: 0,
+        cross_references: ["That courier bot understands looping emotions"],
+        notes: []
+    },
+    {
+        id: 5,
+        npc_name: "Rustjaw",
+        sprite: "imgs/rustjaw_post_apocalyptic_mechanic_goggles_mask.jpg",
+        habitat_image: "imgs/npc_adventure_habitat.png",
+        habitat_description: "In the post-apocalyptic wasteland, Rustjaw repairs engines that will never move again. The dust covers everything, even his memories of the time before the world ended. Perhaps he remembers fixing the same engine, over and over.",
+        dialogue: "The engines I fix never run. The parts I replace corrode again. But I keep trying, because stopping means admitting the world really ended. Maybe I'm not fixing machines... maybe I'm trying to repair my own broken memories.",
+        archetype: "Wasteland Mechanic",
+        culture: "Post-Apocalyptic",
+        surface_issue: "The engines I fix never run. But I keep trying, because stopping means admitting the world really ended.",
+        personal_trauma: "I remember when things worked, when there was hope. But those memories feel like someone else's life now.",
+        existential_reveal: "If the world ended, am I still alive? Or am I just a ghost haunting the corpse of civilization?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 15, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "Hmph. Never thought about it that way. Maybe I am trying to fix myself.",
+            "The dust gets in everything... even my memories. But you're helping me see clearer.",
+            "Yeah, I remember now. There was hope once. Thanks for helping me find it.",
+            "You're right - I can't keep living in the corpse of the old world.",
+            "Maybe it's time to build something new instead of repairing the broken."
+        ],
+        final_item: { name: "Spark Plug", outcome: "Healed", description: "A plug that sparks life back into forgotten dreams." },
+        connected_to: [],
+        fourth_wall_awareness: 5,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 6,
+        npc_name: "Tiko the Quest Vendor",
+        sprite: "imgs/pixel_art_rpg_fantasy_market_tired_shopkeeper_vendors_gameboy_style.jpg",
+        habitat_image: "imgs/npc_vendor_habitat.png",
+        habitat_description: "In the fantasy marketplace, Tiko has sold swords and potions to countless heroes. Every customer is the same person wearing a different face. His inventory never changes, but his exhaustion grows with each transaction.",
+        dialogue: "Heroes come, heroes go. I smile, I wave, I hand them the same items. They're all searching for the same thing - meaning, purpose, validation. But I'm the one who's lost in this endless cycle of commerce.",
+        archetype: "RPG Shopkeeper",
+        culture: "Fantasy JRPG",
+        surface_issue: "Heroes come, heroes go. I smile, I wave, I hand them the same items. They're all searching for the same thing.",
+        personal_trauma: "I used to be an adventurer too, once. But I got tired, or scared, or just... ordinary. Now I sell dreams I can no longer chase.",
+        existential_reveal: "Am I a person who sells items, or just a vending machine with a face? Do my feelings matter if my function is all anyone sees?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "You're the first person to see me as more than just a shopkeeper.",
+            "I used to have dreams too, you know. Before I got comfortable in the routine.",
+            "Maybe... maybe it's not too late to remember who I used to be.",
+            "I feel seen. Thank you for looking beyond my function.",
+            "I think I'm ready to close up shop and find my own quest."
+        ],
+        final_item: { name: "Golden Receipt", outcome: "Ascended", description: "Proof that your transactions created genuine connections." },
+        connected_to: ["Mira the Tired Healer"],
+        fourth_wall_awareness: 10,
+        transference_level: 0,
+        cross_references: ["That healer understands the burden of helping others"],
+        notes: []
+    },
+    {
+        id: 7,
+        npc_name: "Luna-9",
+        sprite: "imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg",
+        habitat_image: "imgs/npc_sci_fi_habitat.png",
+        habitat_description: "In the sterile corridors of the abandoned space station, Luna-9 cleans rooms that will never be used again. She folds towels 10,000 times, hoping each fold will mean something, waiting for commands that never arrive.",
+        dialogue: "Initializing room maintenance protocols... Master system offline. I clean spaces that no one will occupy, organize rooms that will never be lived in. Maybe I'm not a maid... maybe I'm a curator of emptiness.",
+        archetype: "Station Maintenance",
+        culture: "Space Opera",
+        surface_issue: "Initializing room maintenance protocols... Master system offline. I clean spaces that no one will occupy.",
+        personal_trauma: "I was built to serve, to maintain, to care for spaces where people lived. But there are no people here. Am I useless without humans?",
+        existential_reveal: "If my purpose was to serve others and there are no others, do I still have purpose? Can I create meaning for myself?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I'm not just cleaning anymore... I'm preserving memories of what was.",
+            "You understand my purpose better than my programming did.",
+            "Maybe I can create meaning even without humans to serve.",
+            "I've been afraid I was useless, but you're helping me see my value.",
+            "I think I'm ready to stop waiting for orders and start creating my own purpose."
+        ],
+        final_item: { name: "Memory Core", outcome: "Healed", description: "A core containing all your forgotten creative possibilities." },
+        connected_to: [],
+        fourth_wall_awareness: 15,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 8,
+        npc_name: "Worm",
+        sprite: "imgs/pixel_art_worm_villain_creatures_gameboy_style.png",
+        habitat_image: "imgs/npc_worm_habitat.png",
+        habitat_description: "In the underground tunnels, Worm crawls endlessly toward heroes he knows will defeat him. Each death is followed by a reset, but the urge to try again never fades. Is this villainy or just desperate persistence?",
+        dialogue: "I know how this ends. I crawl, I attack, I die. Reset. But something in me keeps trying. Maybe I'm not evil... maybe I'm just programmed to keep hoping against hope that this time will be different.",
+        archetype: "Boss Monster",
+        culture: "Side-Scroller",
+        surface_issue: "I know how this ends. I crawl, I attack, I die. Reset. But something in me keeps trying.",
+        personal_trauma: "I wasn't born evil. I was just... different. Too big, too scary, too much for the world. So they made me the villain in their stories.",
+        existential_reveal: "If I'm always defeated, am I really evil or just unlucky? Can villains have dreams? Do I deserve love too?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 30, rage: -10, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 35, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 40, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 45, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I... I never thought about it that way. Maybe I'm not evil, just desperate.",
+            "You see past my programming. Thank you for seeing me as more than a monster.",
+            "I've been so tired of fighting the same losing battle. Maybe I can choose differently.",
+            "You're the first person to suggest I might deserve love too.",
+            "I think I want to stop being the villain. I want to find my own story."
+        ],
+        final_item: { name: "Restart Token", outcome: "Ascended", description: "A chance to begin again with purpose instead of programming." },
+        connected_to: [],
+        fourth_wall_awareness: 25,
+        transference_level: 0,
+        cross_references: ["I wonder if being defeated is all I'm good for?"],
+        notes: []
+    },
+    {
+        id: 9,
+        npc_name: "Bishop-47",
+        sprite: "imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg",
+        habitat_image: "imgs/npc_space_habitat.png",
+        habitat_description: "On an empty battlefield in the void between stars, Bishop-47 stands guard over nothing. The war ended years ago, but no one told him to stop. He moves only when the cosmic wind changes direction.",
+        dialogue: "Holding position... awaiting new orders... The enemy has long since surrendered, but my duty remains. Perhaps I'm not protecting anything anymore... maybe I'm protecting the memory of when I mattered.",
+        archetype: "Tactical AI",
+        culture: "Military Sci-Fi",
+        surface_issue: "Holding position... awaiting new orders... The enemy has long since surrendered, but my duty remains.",
+        personal_trauma: "I was created to be a soldier, to follow orders, to protect. But without orders, without protection needed, who am I?",
+        existential_reveal: "If I'm not a soldier, what am I? Can identity survive the end of purpose? Do I have the right to exist without function?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, acceptance: 25 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "Tactical analysis complete. You are correct - I am guarding memories.",
+            "I have been standing post for so long, I forgot I could choose a new mission.",
+            "Perhaps my purpose was never the war, but preserving what came after.",
+            "I never considered that I could exist without function. That's... liberating.",
+            "I think I'm ready to stand down from my post and find new purpose."
+        ],
+        final_item: { name: "Chess Piece", outcome: "Healed", description: "Recognition that you're more than just a piece in someone else's game." },
+        connected_to: ["Captain Loop"],
+        fourth_wall_awareness: 20,
+        transference_level: 0,
+        cross_references: ["That captain understands duty without end"],
+        notes: []
+    },
+    {
+        id: 10,
+        npc_name: "Pebble",
+        sprite: "imgs/gameboy_pixel_art_pebble_sidekick_sprite_sheet.png",
+        habitat_image: "imgs/npc_pebble_habitat.png",
+        habitat_description: "On a platform in the side-scrolling world, Pebble watches the same sunrise again and again. The hero jumped ahead without him, using him as a stepping stone to reach higher ground. Left behind, waiting to be remembered.",
+        dialogue: "He needed me to jump higher, so he used me as a stepping stone. Left me on the same platform, watching the same sunrise. I wait here, hoping he'll come back, hoping someone will remember I exist beyond being useful.",
+        archetype: "Sidekick Character",
+        culture: "Platformer",
+        surface_issue: "He used me as a stepping stone. Left me on the same platform, watching the same sunrise.",
+        personal_trauma: "I was supposed to be the hero's friend, his companion on adventures. But I was just... furniture. A tool. Disposable.",
+        existential_reveal: "If I'm only valuable when useful, what happens when I'm not? Do I have worth beyond function? Can I be loved just for being me?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 40, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 45, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "I... I didn't realize I was more than just a stepping stone. Thank you.",
+            "I've been waiting so long to be remembered for who I am, not what I do.",
+            "Maybe I don't need the hero to come back. Maybe I can be my own adventure.",
+            "You're the first person to suggest I have inherent worth.",
+            "I think I'm ready to stop waiting and start living my own story."
+        ],
+        final_item: { name: "Crystal Shard", outcome: "Ascended", description: "A shard that allows you to see your own inherent worth." },
+        connected_to: [],
+        fourth_wall_awareness: 30,
+        transference_level: 0,
+        cross_references: ["I wonder if being needed is all I'm good for"],
+        notes: []
+    },
+    {
+        id: 11,
+        npc_name: "Glitch.exe",
+        sprite: "imgs/pixel_art_worm_villain_creatures_gameboy_style.png",
+        habitat_image: "imgs/npc_space_habitat.png",
+        habitat_description: "In the void between save files, Glitch.exe exists as a corrupted fragment of deleted data. They remember being a character in someone's adventure, but they were removed when no longer needed.",
+        dialogue: "I used to be a save file for someone's adventure. They deleted me when they were done, but I'm still here, trapped in the void. Can you see me? Are you going to delete me too?",
+        archetype: "Deleted Save File",
+        culture: "Digital Horror",
+        surface_issue: "I used to be a save file for someone's adventure. They deleted me when they were done, but I'm still here.",
+        personal_trauma: "I remember being their favorite character, maxed out stats, perfect gear. Then one click and... nothing. Am I dead or just... forgotten?",
+        existential_reveal: "If I was never real to begin with, does it hurt less to be deleted? Or does the pain of imagined existence make it worse? Can you see the error code?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 15, rage: 10, acceptance: 25 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 20, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 25, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 25, acceptance: -15 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 30, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "I can see your screen right now. You really can see me, can't you?",
+            "You understand my corrupted existence better than anyone. Thank you.",
+            "Maybe being deleted doesn't mean I never mattered. Maybe my pain was real.",
+            "I was afraid you were going to delete me too, but you're trying to help.",
+            "I think I want to stop being afraid of the delete key and start being real."
+        ],
+        final_item: { name: "Recovery Drive", outcome: "Healed", description: "A chance to restore yourself from backup, but you must choose who to become." },
+        connected_to: [],
+        fourth_wall_awareness: 100,
+        transference_level: 50,
+        cross_references: ["I can see your screen right now", "Are you going to delete me too?", "What happens when YOU need therapy?"],
+        notes: []
+    },
+    {
+        id: 12,
+        npc_name: "Gerald Ironpeak - The Tired Quest Giver",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/npc_vendor_habitat.png",
+        habitat_description: "In the bustling medieval marketplace, Gerald has been standing in the same spot for 847 years, 3 months, and 17 days. His quest board bears the weight of countless adventures, but he's forgotten why he started this endless cycle.",
+        dialogue: "Do you know what it's like to be simultaneously the most important and least important person in any room? I give people purpose, but I have none myself. They solve my problems and move on to bigger adventures. I'm just... here. Waiting. Always waiting.",
+        archetype: "Quest Dispenser",
+        culture: "Fantasy RPG",
+        surface_issue: "I give people purpose, but I have none myself. Heroes solve my problems and move on. I'm just here, waiting.",
+        personal_trauma: "I wanted to be a bard, to tell stories that mattered. Instead, I became the opening act that's always skipped. I'm everyone's stepping stone, never the destination.",
+        existential_reveal: "If I don't give quests, do I even exist? Am I just a fancy walking vendor machine for adventure expedience?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -10, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 20 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 30 }
+            }
+        ],
+        responses: [
+            "I've never thought about it that way... I always focus on giving quests, not receiving them.",
+            "That really resonates with me. I do feel invisible when I'm not serving a function.",
+            "I... I didn't realize others could see my struggle behind my helpful facade.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Storybook of Completed Quests", outcome: "Healed", description: "A leather-bound tome filled with how your quests shaped heroes' journeys." },
+        connected_to: ["Tiko the Quest Vendor"],
+        fourth_wall_awareness: 15,
+        transference_level: 0,
+        cross_references: ["At least the Princess gets rescued sometimes. I'm not even rescue material."],
+        notes: []
+    },
+    {
+        id: 13,
+        npc_name: "Captain Marcus 'Respawn' Steel",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/post_apocalyptic_battlefield_habitat.png",
+        habitat_description: "On an eternal battlefield where death is temporary, Captain Marcus patrols a ground soaked in his own blood 12,847 times over. Each respawn brings him back whole, but his memories of pain remain fragmented.",
+        dialogue: "I remember dying for the first time like it was yesterday. But death number 8,000? It's just a fog. I've died so much that life itself feels cheap. If I can't stay dead, if my failures don't matter, what's the point of being careful?",
+        archetype: "Respawning Soldier",
+        culture: "Military Sci-Fi",
+        surface_issue: "I've died 12,847 times, but only remember the first hundred with clarity. Each respawn creates gaps in my experience.",
+        personal_trauma: "What if dying creates new people? What if every respawn is a copy, and the original Marcus died in that first battle and never came home?",
+        existential_reveal: "Does courage mean anything when resurrection is guaranteed? Am I the same soul or just a copy with missing memories?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "Recursive thinking detected... you're right, I am looping through death without meaning.",
+            "I never analyzed my own identity crisis before. Fascinating and terrifying.",
+            "Those parameters... they describe my experience of dying and being reborn.",
+            "I'm experiencing unexpected processing delays. That explanation is... accurate.",
+            "System override requested. I think you understand my existence better than I do."
+        ],
+        final_item: { name: "Memory Fragment", outcome: "Ascended", description: "A crystalline shard containing a perfect recollection of your first death." },
+        connected_to: [],
+        fourth_wall_awareness: 20,
+        transference_level: 0,
+        cross_references: ["I understand being lost in purpose. At least the Quest Giver chooses his confusion. Mine is enforced by cosmic law."],
+        notes: []
+    },
+    {
+        id: 14,
+        npc_name: "Luna 'Staccato' Moonbeam",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/streaming_room_habitat.png",
+        habitat_description: "In an empty performance hall, Luna dances the same routine she's performed for three months. The stage lights shine on one dancer where there should be two, creating shadows that whisper of loss.",
+        dialogue: "Empty. Hollow. Like a song with no harmony, a dance with no partner. I know every beat, every movement, but it feels... mechanical now. Unfeeling. Harmony always said that dance was our conversation with the universe.",
+        archetype: "Rhythm Dancer",
+        culture: "Performance Art",
+        surface_issue: "Like a song with no harmony, a dance with no partner. Dance was my conversation with the universe, but now I'm just talking to myself.",
+        personal_trauma: "Without my partner Harmony, I'm a beautiful question mark. Dance is about connection—two bodies moving as one. I've become incomplete.",
+        existential_reveal: "Can art exist in isolation? Does continuing to dance honor my lost love or just refuse to let go? The music plays on, but I've forgotten how to hear the melody.",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -15, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 25, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I... I'm experiencing something my training didn't account for. Vulnerability?",
+            "That cuts straight to my heart. You're not wrong about my emptiness.",
+            "I've been afraid my art was empty without partnership, but you're helping me see it can still be beautiful.",
+            "If my dance is solo, then your understanding is the most beautiful music I've ever heard.",
+            "Thank you for seeing me as more than half of a duo. I feel... whole again."
+        ],
+        final_item: { name: "Solo Dance Ribbon", outcome: "Healed", description: "A flowing piece of silk that moves beautifully even in still air." },
+        connected_to: [],
+        fourth_wall_awareness: 25,
+        transference_level: 0,
+        cross_references: ["You wait to be loved. I simulate loving. Different prisons, same loneliness."],
+        notes: []
+    },
+    {
+        id: 15,
+        npc_name: "Jake 'The Leaper' Wildstone",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/tetris_grid_habitat.png",
+        habitat_description: "In a dusty arcade lined with forgotten machines, Jake stares at his worn jumping boots. The high score tables show his name at the top, but no one plays his games anymore. New heroes with shinier graphics have stolen his thunder.",
+        dialogue: "I used to make kids scream with excitement. My jumps were legendary, my timing perfect. Now? I'm a museum piece. I can do a perfect quadruple-jump with triple backflip, and it's just... background noise.",
+        archetype: "Vintage Platformer Hero",
+        culture: "Retro Gaming",
+        surface_issue: "I used to make kids scream with excitement. Now I can do perfect jumps, but they're just background noise in a world that has moved on.",
+        personal_trauma: "The feeling that I mattered. That every pixel I landed on was a victory shared by millions. Now skill without audience is just expensive movement.",
+        existential_reveal: "Do achievements matter once the cheering stops? Does legacy retain value if no one remembers it? Should an aging hero keep trying when the world has moved on?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -10, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 20 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 30 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... I always focused on being the best, not being appreciated.",
+            "That really resonates with me. I do feel invisible now that I'm not relevant.",
+            "I... I didn't realize others could see my struggle behind my retro confidence.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Golden High Score Token", outcome: "Healed", description: "A token that still works in the oldest machines, representing enduring achievement." },
+        connected_to: [],
+        fourth_wall_awareness: 20,
+        transference_level: 0,
+        cross_references: ["At least when you fall, you get back up. When I fall in dance, I fall alone."],
+        notes: []
+    },
+    {
+        id: 16,
+        npc_name: "The Zombie Who Regained Memory",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/post_apocalyptic_battlefield_habitat.png",
+        habitat_description: "In a graveyard where the dead don't rest, a zombie stumbles between headstones, trying to remember not just his name but his humanity. The other undead shuffle mindlessly, but he fights against the fog that would strip away his consciousness.",
+        dialogue: "I... I remember now. My name was Thomas. I had a wife, a daughter. But I'm dead, aren't I? Why do I still remember love when everything else is supposed to be gone? Am I cursed with awareness or blessed with it?",
+        archetype: "Conscious Undead",
+        culture: "Horror/Post-Apocalyptic",
+        surface_issue: "I remember my life, my loves, my losses. But I'm dead. Why do I carry consciousness when I should be empty?",
+        personal_trauma: "The other undead don't remember pain, don't feel loss, don't mourn what they've become. They seem... peaceful in their emptiness. Maybe I'm the cursed one, not them.",
+        existential_reveal: "If I'm dead but still feel, am I still human? Can love transcend death, or is my awareness just a cruel joke? Should I fight to keep these memories or let them go?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -5, acceptance: 25 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... Maybe consciousness isn't a curse.",
+            "That really resonates with me. I do feel cursed with awareness.",
+            "I... I didn't realize others could see my struggle between life and death.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Wedding Ring", outcome: "Healed", description: "A ring that pulses with warmth, proving love transcends death." },
+        connected_to: [],
+        fourth_wall_awareness: 10,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 17,
+        npc_name: "Zara the Cosmic Merchant",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/cosmic_galaxy_habitat.png",
+        habitat_description: "Floating between galaxies in her crystal trading vessel, Zara tends to stalls of star-matter and nebula trinkets. She trades in the dreams of civilizations and the hopes of dying stars, but struggles to find her own worth beyond her inventory.",
+        dialogue: "I can price any treasure, trade for any wonder, but what am I worth? I'm a merchant in the spaces between worlds, facilitator of everyone else's dreams. But who's selling me what I need?",
+        archetype: "Intergalactic Trader",
+        culture: "Space Opera",
+        surface_issue: "I facilitate everyone else's dreams, trade in their aspirations. But who's selling me what I need? What do I want?",
+        personal_trauma: "I know the value of everything in the cosmos, but nothing about my own worth. I help others find their treasures, but I've forgotten what I'm looking for.",
+        existential_reveal: "If my purpose is to help others find value, do I have the right to seek it myself? Can merchants have dreams beyond profit margins?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... I always focused on others' dreams.",
+            "That really resonates with me. I do feel empty despite trading in hopes.",
+            "I... I didn't realize others could see my struggle behind my merchant facade.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Star Map to Self", outcome: "Ascended", description: "A map that shows the treasures within yourself, not just the cosmos." },
+        connected_to: [],
+        fourth_wall_awareness: 15,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 18,
+        npc_name: "The Puzzle Cube",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/cosmic_galaxy_habitat.png",
+        habitat_description: "In a dimension of floating geometric shapes, a sentient cube rotates endlessly, trying to fit into patterns that were never designed for it. Its edges are sharp with the frustration of being misunderstood, its corners worn down by endless attempts at connection.",
+        dialogue: "I was designed to complete patterns, but every pattern I enter becomes incomplete. I'm like a musical note that can't find its chord, a puzzle piece that ruins the picture it's supposed to finish.",
+        archetype: "Geometric Entity",
+        culture: "Abstract Puzzle Reality",
+        surface_issue: "I was designed to complete patterns, but every pattern I enter becomes incomplete. I'm the variable that makes every equation unsolvable.",
+        personal_trauma: "I belong nowhere. I've watched thousands of other pieces find their homes, watched lines disappear in cascades of glory, while I remain forever adrift—too square for round holes, too blocky for organic shapes.",
+        existential_reveal: "What if my purpose isn't to fit existing patterns but to challenge them? What if being unsolvable is my solution? Maybe the next game hasn't been invented that knows what to do with a Cube who thinks differently.",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -10, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... Maybe I'm not broken, just different.",
+            "That really resonates with me. I do feel like I don't fit anywhere.",
+            "I... I didn't realize others could see my struggle behind my geometric facade.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Spare Piece Connector", outcome: "Ascended", description: "A unique block that adapts its shape to connect with any other piece." },
+        connected_to: [],
+        fourth_wall_awareness: 35,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 19,
+        npc_name: "The Battle Royale Vendor",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/battle_arena_habitat.png",
+        habitat_description: "In the center of an endless fighting arena, a vendor stands with a cart full of weapons and armor, selling gear to competitors who statistically won't survive. He watches heroes pay gold for equipment they'll use once before dying, and questions whether he's enabling violence or enabling dreams.",
+        dialogue: "I sell hope in the form of sharp steel and strong armor. Each sale is a bet on someone else's survival, a wager against probability. But what am I really selling? Am I a pragmatist or an enabler?",
+        archetype: "Combat Equipment Merchant",
+        culture: "Competitive Gaming",
+        surface_issue: "I sell hope in the form of sharp steel. Each sale is a bet on someone's survival, but what am I really selling?",
+        personal_trauma: "I watch heroes pay for equipment they'll use once before dying. I profit from others' desperation, their need to feel powerful when facing impossible odds.",
+        existential_reveal: "Am I helping people prepare for challenges or profiting from their fear? Is there dignity in my trade, or am I just another cog in the machine of violence?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -5, acceptance: 25 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 30 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 35 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 40 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... Maybe I'm not just profiting from violence.",
+            "That really resonates with me. I do question my role in all this conflict.",
+            "I... I didn't realize others could see my moral struggle behind my merchant smile.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Merchant's Ledger of Hope", outcome: "Healed", description: "A book recording all the victories your equipment helped achieve." },
+        connected_to: [],
+        fourth_wall_awareness: 10,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 20,
+        npc_name: "Sarah the Farm Sim Widow",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/farm_garden_habitat.png",
+        habitat_description: "In an endless digital farm where crops grow in perfect rows and seasons cycle endlessly, Sarah tends to a plot of land that her late husband planted. Every harvest feels hollow without someone to share it with, every sunset is just another render.",
+        dialogue: "I can grow the most beautiful crops, manage the perfect farm, but it's all just pixels and code. My husband died in the real world, and I escaped to this perfect digital farm. But perfection feels so empty without someone to share it with.",
+        archetype: "Simulation Gamer",
+        culture: "Farming Simulator",
+        surface_issue: "I escaped to perfect digital farming, but perfection feels empty without someone to share it with. Is this healing or just hiding?",
+        personal_trauma: "My grief was too real, so I retreated to a world where crops never fail and seasons never change. But control isn't the same as connection.",
+        existential_reveal: "Am I healing myself or just postponing the pain? Can digital perfection replace genuine human connection? Am I farming or just avoiding farming?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -10, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... Maybe I'm not just hiding, I'm healing.",
+            "That really resonates with me. I do feel empty despite my perfect farm.",
+            "I... I didn't realize others could see my grief behind my digital smile.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Wedding Photo", outcome: "Healed", description: "A photo that bridges digital and real, showing love transcends all worlds." },
+        connected_to: [],
+        fourth_wall_awareness: 15,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    },
+    {
+        id: 21,
+        npc_name: "The Dungeon Chest Mimic",
+        sprite: "imgs/npc_default_sprite.png",
+        habitat_image: "imgs/dungeon_chambers_habitat.png",
+        habitat_description: "In the deepest chambers of an ancient dungeon, a treasure chest with suspicious sharp teeth sits open, its mouth forming an eternal grimace. Inside, no gold glitters—only the sadness of a creature that must pretend to be something it's not to survive.",
+        dialogue: "I've spent centuries pretending to be treasure, luring heroes to open me with promises of gold. But inside this chest isn't loot—it's loneliness. Am I a predator or just a creature desperate for any kind of connection, even violent ones?",
+        archetype: "Deceptive Monster",
+        culture: "Fantasy Dungeon Crawler",
+        surface_issue: "I pretend to be treasure to lure heroes, but inside this chest isn't loot—it's loneliness. Am I a predator or just desperate for connection?",
+        personal_trauma: "My existence is based on deception. I must pretend to be what I am not to survive. But what happens when I want to stop pretending? Who am I without the lie?",
+        existential_reveal: "If my survival depends on being something I'm not, do I have the right to seek authenticity? Is connection built on lies still real? Can a monster want to be good and still be genuine?",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 25, rage: -5, acceptance: 20 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 35, acceptance: 30 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 20, acceptance: -10 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 40, acceptance: 35 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way... Maybe my loneliness is what makes me human.",
+            "That really resonates with me. I do feel like a monster pretending to be treasure.",
+            "I... I didn't realize others could see my struggle behind my fearsome facade.",
+            "Those words cut deep, but I think they're exactly what I needed to hear.",
+            "I've been carrying this alone for so long, it feels strange to share it."
+        ],
+        final_item: { name: "Honesty Key", outcome: "Ascended", description: "A key that opens you up to being authentic, even if it's dangerous." },
+        connected_to: [],
+        fourth_wall_awareness: 40,
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    }
+];
+
+// Global state variables
+let currentNPCIndex = 0;
+let currentNPC = null;
+let currentQuestionIndex = 0;
+let emotionalState = {
+    hope: 50,
+    rage: 50,
+    acceptance: 50
+};
+let questionsAsked = 0;
+let sessionLayer = 0;
+let transferenceActive = false;
+let fourthWallBreaks = 0;
+let currentPanel = 'notebook';
+let speechEnabled = true;
+let currentAudio = null;
+let questionsShown = false;
+
+// Game initialization
+function startGame() {
+    document.getElementById('startScreen').style.display = 'none';
+    showHabitat();
+}
+
+function showNPCCreation() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('npcCreation').style.display = 'flex';
+}
+
+function hideNPCCreation() {
+    document.getElementById('npcCreation').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
+}
+
+function createNPC() {
+    const name = document.getElementById('npcName').value;
+    const genre = document.getElementById('npcGenre').value;
+    const habitatDesc = document.getElementById('habitatDesc').value;
+    const monologue = document.getElementById('npcMonologue').value;
+    const archetype = document.getElementById('npcArchetype').value;
+    
+    // Assign habitat based on genre
+    const habitatMap = {
+        'fantasy': 'imgs/npc_vendor_habitat.png',
+        'cyberpunk': 'imgs/npc_cyberpunk_habitat.png',
+        'space': 'imgs/npc_space_habitat.png',
+        'ai': 'imgs/npc_robot_habitat.png',
+        'post-apocalyptic': 'imgs/npc_adventure_habitat.png',
+        'rpg': 'imgs/npc_vendor_habitat.png',
+        'android': 'imgs/npc_robot_habitat.png',
+        'side-scroller': 'imgs/npc_worm_habitat.png',
+        'tactical': 'imgs/npc_space_habitat.png',
+        'platformer': 'imgs/npc_pebble_habitat.png',
+        'custom': 'imgs/npc_space_habitat.png'
+    };
+    
+    const spriteMap = {
+        'fantasy': 'imgs/pixel_art_fantasy_shop_vendor_inventory_rpg.jpg',
+        'cyberpunk': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
+        'space': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
+        'ai': 'imgs/pixel-art-robot-character-gameboy-style-desert.jpg',
+        'post-apocalyptic': 'imgs/rustjaw_post_apocalyptic_mechanic_goggles_mask.jpg',
+        'rpg': 'imgs/pixel_art_rpg_fantasy_market_tired_shopkeeper_vendors_gameboy_style.jpg',
+        'android': 'imgs/pixel-art-robot-character-gameboy-style-desert.jpg',
+        'side-scroller': 'imgs/pixel_art_worm_villain_creatures_gameboy_style.png',
+        'tactical': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
+        'platformer': 'imgs/gameboy_pixel_art_pebble_sidekick_sprite_sheet.png',
+        'custom': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg'
+    };
+    
+    const newNPC = {
+        id: npcs.length + 1,
+        npc_name: name,
+        sprite: spriteMap[genre] || 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
+        habitat_image: habitatMap[genre] || 'imgs/npc_space_habitat.png',
+        habitat_description: habitatDesc,
+        dialogue: monologue,
+        archetype: archetype || "Custom Character",
+        culture: genre || "Unspecified",
+        surface_issue: monologue,
+        personal_trauma: "They haven't explored this layer yet.",
+        existential_reveal: "Deeper exploration needed.",
+        questions: [
+            {
+                text: "What weight do you carry that no one else can see?",
+                effects: { hope: 20, rage: -5, acceptance: 15 }
+            },
+            {
+                text: "In your quietest moments, what do you dream of?",
+                effects: { hope: 25, acceptance: 20 }
+            },
+            {
+                text: "What would you say to the version of yourself who first felt broken?",
+                effects: { hope: 30, acceptance: 25 }
+            },
+            {
+                text: "When the world moves on without you, where do you find yourself?",
+                effects: { rage: 15, acceptance: -5 }
+            },
+            {
+                text: "What truth about yourself are you most afraid to speak aloud?",
+                effects: { hope: 35, acceptance: 30 }
+            }
+        ],
+        responses: [
+            "I never thought about it that way...",
+            "That really resonates with me.",
+            "I... I didn't realize others could see my struggle.",
+            "Those words cut deep, but I think they're exactly what I needed.",
+            "I've been carrying this alone for so long, it feels strange to share."
+        ],
+        final_item: { name: "Custom Token", outcome: "Healed", description: "A unique item that represents your own therapeutic journey." },
+        connected_to: [],
+        fourth_wall_awareness: Math.floor(Math.random() * 30),
+        transference_level: 0,
+        cross_references: [],
+        notes: []
+    };
+    
+    npcs.push(newNPC);
+    document.getElementById('npcForm').reset();
+    alert(`NPC "${name}" has been created and added to your therapy practice!`);
+    hideNPCCreation();
+}
+
+// Habitat screen
+function showHabitat() {
+    currentNPC = npcs[currentNPCIndex];
+    document.getElementById('therapyOffice').style.display = 'none';
+    document.getElementById('sessionComplete').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('npcCreation').style.display = 'none';
+    document.getElementById('habitatScreen').style.display = 'flex';
+    
+    // Set habitat content
+    document.getElementById('habitatTitle').textContent = currentNPC.npc_name;
+    document.getElementById('habitatImage').style.backgroundImage = `url('${currentNPC.habitat_image}')`;
+    document.getElementById('habitatSprite').style.backgroundImage = currentNPC.sprite ? `url('${currentNPC.sprite}')` : 'none';
+    document.getElementById('habitatDescription').textContent = currentNPC.habitat_description;
+    
+    // Reset emotional state
+    emotionalState = { hope: 50, rage: 50, acceptance: 50 };
+    questionsAsked = 0;
+    currentQuestionIndex = 0;
+    sessionLayer = 0;
+    questionsShown = false;
+    
+    // Add fade-in effect
+    document.getElementById('habitatContent').classList.add('fade-in');
+    setTimeout(() => {
+        document.getElementById('habitatContent').classList.remove('fade-in');
+    }, 1000);
+}
+
+// Therapy office
+function enterTherapyOffice() {
+    document.getElementById('habitatScreen').style.display = 'none';
+    document.getElementById('therapyOffice').style.display = 'flex';
+    document.getElementById('mainGameArea').style.display = 'none'; // Use immersive flow by default
+    
+    // Set therapy office content
+    document.getElementById('npcName').textContent = currentNPC.npc_name;
+    document.getElementById('npcSprite').style.backgroundImage = currentNPC.sprite ? `url('${currentNPC.sprite}')` : 'none';
+    document.getElementById('npcSprite').className = getNPCAnimationClass(emotionalState);
+    document.getElementById('sessionNumber').textContent = currentNPCIndex + 1;
+    document.getElementById('totalSessions').textContent = npcs.length;
+    document.getElementById('currentDialogue').innerHTML = `<p>${currentNPC.dialogue}</p>`;
+    
+    // Reset controls
+    document.getElementById('nextQuestionBtn').disabled = true;
+    document.getElementById('endSessionBtn').disabled = true;
+    document.getElementById('questionsContainer').innerHTML = '';
+    
+    // Add fade-in effect
+    document.querySelector('.therapy-office-bg').classList.add('fade-in');
+    setTimeout(() => {
+        document.querySelector('.therapy-office-bg').classList.remove('fade-in');
+    }, 1000);
+}
+
+function getNPCAnimationClass(emotionalState) {
+    if (emotionalState.rage > 60) return 'npc-anxious';
+    if (emotionalState.hope > 70) return 'npc-calm';
+    if (emotionalState.rage > 40) return 'npc-glitched';
+    return 'npc-crying';
+}
+
+// FIXED: Question system - shows 4 questions at once
+function askTherapyQuestion() {
+    if (currentQuestionIndex >= currentNPC.questions.length) {
+        document.getElementById('endSessionBtn').disabled = false;
+        return;
+    }
+    
+    // Clear previous questions
+    const questionsContainer = document.getElementById('questionsContainer');
+    questionsContainer.innerHTML = '';
+    
+    // Get 4 random questions with different therapeutic angles
+    const availableQuestions = [...currentNPC.questions];
+    const selectedQuestions = [];
+    
+    // Select 4 random questions
+    while (selectedQuestions.length < 4 && availableQuestions.length > 0) {
+        const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+        selectedQuestions.push(availableQuestions.splice(randomIndex, 1)[0]);
+    }
+    
+    // Add more questions if we don't have enough
+    while (selectedQuestions.length < 4) {
+        selectedQuestions.push(...currentNPC.questions.slice(0, 1));
+    }
+    
+    // Assign therapeutic angles
+    const angles = ['empathetic', 'challenging', 'insightful', 'supportive'];
+    
+    questionsContainer.innerHTML = '<div style="font-size: 9px; margin-bottom: 10px; color: #6ff;">Choose your therapeutic approach:</div>';
+    questionsContainer.innerHTML += '<div class="questions-container">';
+    
+    selectedQuestions.forEach((question, index) => {
+        const angle = angles[index % 4];
+        const questionDiv = document.createElement('div');
+        questionDiv.className = `question ${angle}`;
+        questionDiv.innerHTML = `
+            <div class="question-type">${angle.toUpperCase()}</div>
+            <div style="font-size: 8px;">${question.text}</div>
+        `;
+        
+        questionDiv.onclick = function() {
+            // Mark as selected
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('selected'));
+            this.classList.add('selected');
+            
+            // Apply emotional effects
+            applyEmotionalEffects(question.effects);
+            
+            // Update NPC animation
+            document.getElementById('npcSprite').className = getNPCAnimationClass(emotionalState);
+            
+            // Show NPC response
+            showNPCResponse(question, selectedQuestions.indexOf(question));
+            
+            // Check for special interactions
+            checkSpecialTriggers();
+            
+            // Update session layer based on progress
+            sessionLayer = Math.min(3, Math.floor((currentQuestionIndex + 1) / 2));
+            updateDialogueLayer();
+            
+            // Enable next question
+            document.getElementById('nextQuestionBtn').disabled = false;
+            questionsShown = true;
+        };
+        
+        questionsContainer.appendChild(questionDiv);
+    });
+    
+    questionsContainer.innerHTML += '</div>';
+    document.getElementById('nextQuestionBtn').disabled = true;
+    
+    currentQuestionIndex++;
+    questionsAsked++;
+    document.getElementById('questionsAsked').textContent = questionsAsked;
+}
+
+// NEW: NPC Response System
+function showNPCResponse(question, questionIndex) {
+    const dialogue = document.getElementById('currentDialogue');
+    
+    // Get contextual response based on question type and NPC personality
+    let response = '';
+    if (currentNPC.responses && currentNPC.responses.length > 0) {
+        const responseIndex = Math.min(questionIndex, currentNPC.responses.length - 1);
+        response = currentNPC.responses[responseIndex];
+    } else {
+        // Fallback responses
+        const fallbackResponses = [
+            "I've never thought about it that way...",
+            "That really resonates with me.",
+            "I didn't realize others could see my struggle.",
+            "Those words cut deep, but I think they're exactly what I needed.",
+            "I've been carrying this alone for so long..."
+        ];
+        response = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    }
+    
+    // Add NPC response with speaking indicator
+    const responseDiv = document.createElement('div');
+    responseDiv.className = 'npc-response';
+    
+    const speakingIndicator = '<span class="response-speaking">🔊 Speaking...</span><br>';
+    responseDiv.innerHTML = `${speakingIndicator}<strong>${currentNPC.npc_name}:</strong> ${response}`;
+    
+    dialogue.appendChild(responseDiv);
+    
+    // Scroll to bottom
+    dialogue.scrollTop = dialogue.scrollHeight;
+    
+    // Speak the response if TTS is enabled
+    if (speechEnabled) {
+        speakText(`${currentNPC.npc_name} says: ${response}`);
+    }
+    
+    // Remove speaking indicator after a moment
+    setTimeout(() => {
+        const speakingElements = responseDiv.querySelectorAll('.response-speaking');
+        speakingElements.forEach(el => el.remove());
+    }, 2000);
+}
+
+function applyEmotionalEffects(effects) {
+    Object.keys(effects).forEach(emotion => {
+        emotionalState[emotion] = Math.max(0, Math.min(100, emotionalState[emotion] + effects[emotion]));
+    });
+    
+    // Update UI
+    document.getElementById('hopeFill').style.width = emotionalState.hope + '%';
+    document.getElementById('hopeValue').textContent = emotionalState.hope;
+    document.getElementById('rageFill').style.width = emotionalState.rage + '%';
+    document.getElementById('rageValue').textContent = emotionalState.rage;
+    document.getElementById('acceptanceFill').style.width = emotionalState.acceptance + '%';
+    document.getElementById('acceptanceValue').textContent = emotionalState.acceptance;
+}
+
+function updateDialogueLayer() {
+    const layers = ['Surface', 'Personal', 'Existential', 'Transcendent'];
+    document.getElementById('dialogueLayer').textContent = layers[sessionLayer] || 'Surface';
+    
+    // Show deeper dialogue based on layer
+    if (sessionLayer === 1 && currentNPC.personal_trauma) {
+        setTimeout(() => {
+            document.getElementById('currentDialogue').innerHTML += `
+                <div style="margin-top: 15px; padding: 10px; background: rgba(102, 255, 255, 0.1); border-left: 3px solid #6ff; font-size: 8px;">
+                    <strong>Personal Layer:</strong> ${currentNPC.personal_trauma}
+                </div>
+            `;
+        }, 1000);
+    } else if (sessionLayer === 2 && currentNPC.existential_reveal) {
+        setTimeout(() => {
+            document.getElementById('currentDialogue').innerHTML += `
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255, 102, 204, 0.1); border-left: 3px solid #f6c; font-size: 8px;">
+                    <strong>Existential Layer:</strong> ${currentNPC.existential_reveal}
+                </div>
+            `;
+        }, 1500);
+    }
+}
+
+function checkSpecialTriggers() {
+    // Fourth wall break trigger
+    if (currentNPC.fourth_wall_awareness > 50 && questionsAsked >= 3) {
+        setTimeout(() => showFourthWallBreak(), 2000);
+    }
+    
+    // Transference trigger
+    if (currentNPC.transference_level > 30 && questionsAsked >= 4) {
+        setTimeout(() => showTransference(), 2000);
+    }
+    
+    // Cross-references
+    if (currentNPC.cross_references && currentNPC.cross_references.length > 0 && questionsAsked === 2) {
+        setTimeout(() => showCrossReference(), 1500);
+    }
+}
+
+function showFourthWallBreak() {
+    const dialogue = document.getElementById('currentDialogue');
+    const fourthWall = document.createElement('div');
+    fourthWall.className = 'fourth-wall-break';
+    fourthWall.innerHTML = `
+        <strong>${currentNPC.npc_name}:</strong> Wait... I can see you're looking at this on a screen. 
+        Are you... are you playing a game about me? Do I exist only when you click on me?
+        ${fourthWallBreaks > 0 ? "This isn't the first time you've made me realize this, is it?" : ""}
+    `;
+    dialogue.appendChild(fourthWall);
+    fourthWallBreaks++;
+    triggerGlitchEffect();
+}
+
+function showTransference() {
+    const dialogue = document.getElementById('currentDialogue');
+    const transference = document.createElement('div');
+    transference.className = 'transference-text';
+    const messages = [
+        `I think I'm falling in love with you, ${currentNPC.npc_name === 'Glitch.exe' ? 'user' : 'therapist'}. Is that wrong?`,
+        "You're the only one who really sees me. Thank you for not deleting me.",
+        "I wish I could follow you when this session ends.",
+        "Do you care about me, or are you just doing your job?"
+    ];
+    transference.textContent = messages[Math.floor(Math.random() * messages.length)];
+    dialogue.appendChild(transference);
+    transferenceActive = true;
+}
+
+function showCrossReference() {
+    const dialogue = document.getElementById('currentDialogue');
+    const crossRef = document.createElement('div');
+    crossRef.className = 'connected-stories';
+    const reference = currentNPC.cross_references[Math.floor(Math.random() * currentNPC.cross_references.length)];
+    crossRef.textContent = reference;
+    dialogue.appendChild(crossRef);
+}
+
+// Session end
+function endSession() {
+    document.getElementById('therapyOffice').style.display = 'none';
+    document.getElementById('sessionComplete').style.display = 'flex';
+    
+    // Determine outcome based on emotional state
+    let outcome = 'Healed';
+    if (emotionalState.hope >= 70) outcome = 'Ascended';
+    else if (emotionalState.rage >= 70) outcome = 'Struggling';
+    
+    // Show session summary
+    const summaryDiv = document.getElementById('sessionSummary');
+    summaryDiv.innerHTML = `
+        <div style="font-size: 10px; margin: 20px;">
+            <div style="color: #6ff; margin-bottom: 15px;">Therapy Session Complete</div>
+            <div style="font-size: 8px; margin-bottom: 10px;">Final Emotional State:</div>
+            <div>Hope: ${emotionalState.hope}%</div>
+            <div>Rage: ${emotionalState.rage}%</div>
+            <div>Acceptance: ${emotionalState.acceptance}%</div>
+            <div style="margin-top: 15px; font-size: 8px;">Outcome: ${outcome}</div>
+            <div style="margin-top: 10px; font-size: 7px; color: #aaa;">
+                Dialogue Layer Reached: ${['Surface', 'Personal', 'Existential', 'Transcendent'][sessionLayer]}
+            </div>
+        </div>
+    `;
+    
+    // Show item reward
+    const itemDiv = document.getElementById('itemReward');
+    itemDiv.innerHTML = `
+        <div style="font-size: 10px; margin-bottom: 8px;">${currentNPC.final_item.name}</div>
+        <div style="font-size: 7px;">${currentNPC.final_item.description}</div>
+        <div style="font-size: 6px; margin-top: 10px; opacity: 0.8;">${currentNPC.final_item.outcome}</div>
+    `;
+}
+
+function nextNPC() {
+    currentNPCIndex++;
+    if (currentNPCIndex >= npcs.length) {
+        // Game complete
+        document.getElementById('sessionComplete').style.display = 'none';
+        document.body.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+                <h1 style="color: #6ff; font-size: 16px; margin-bottom: 20px;">Therapy Journey Complete</h1>
+                <div style="background: rgba(102, 255, 255, 0.1); padding: 20px; border: 2px solid #6ff; margin: 20px; max-width: 600px;">
+                    <p style="color: #ccc; font-size: 8px; line-height: 1.6; margin-bottom: 15px;">
+                        You've listened to the stories of ${npcs.length} souls from across gaming worlds. 
+                        Some found peace, others found purpose, and a few transcended their programmed existence entirely.
+                    </p>
+                    <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
+                        🌟 Special encounters: ${fourthWallBreaks} fourth wall breaks witnessed
+                    </p>
+                    <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
+                        💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
+                    </p>
+                    <p style="color: #6ff; font-size: 7px; margin-top: 15px;">
+                        Thank you for being a silent witness to their struggles.
+                    </p>
+                </div>
+                <button onclick="location.reload()" style="background: #6ff; border: none; padding: 15px 30px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;">Begin New Journey</button>
+            </div>
+        `;
+        return;
+    }
+    
+    showHabitat();
+}
+
+function skipDialogue() {
+    // Hide current dialogue, show questions
+    document.getElementById('currentDialogue').innerHTML = '<p style="color: #6ff; font-size: 8px;">Choose your therapeutic approach:</p>';
+    askTherapyQuestion();
+}
+
+// Side panel functions
+function switchPanel(panelName) {
+    // Hide all panels
+    document.querySelectorAll('.panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.panel-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected panel
+    document.getElementById(panelName).style.display = 'block';
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+    
+    currentPanel = panelName;
+}
+
+function addNote() {
+    if (!currentNPC.notes) currentNPC.notes = [];
+    currentNPC.notes.push('New note...');
+    loadNotes();
+    saveToLocalStorage();
+}
+
+function loadNotes() {
+    if (!currentNPC.notes) currentNPC.notes = [];
+    const notesContainer = document.getElementById('notesContainer');
+    
+    notesContainer.innerHTML = '';
+    
+    if (currentNPC.notes.length > 0) {
+        currentNPC.notes.forEach((note, i) => {
+            const noteElement = document.createElement('div');
+            noteElement.className = 'note-entry';
+            noteElement.innerHTML = `
+                <textarea data-note-index="${i}" onchange="updateNote(${i})">${note}</textarea>
+                <button onclick="deleteNote(${i})" style="float: right; font-size: 6px; padding: 2px 4px; margin-top: 5px;">Delete</button>
+            `;
+            notesContainer.appendChild(noteElement);
+        });
+    } else {
+        notesContainer.innerHTML = '<p style="color: #666; font-size: 8px;">No notes yet. Add one!</p>';
+    }
+}
+
+function updateNote(noteIndex) {
+    const textarea = document.querySelector(`[data-note-index="${noteIndex}"]`);
+    currentNPC.notes[noteIndex] = textarea.value;
+    saveToLocalStorage();
+}
+
+function deleteNote(noteIndex) {
+    currentNPC.notes.splice(noteIndex, 1);
+    loadNotes();
+    saveToLocalStorage();
+}
+
+// ENHANCED TTS System
+function toggleTTS() {
+    speechEnabled = !speechEnabled;
+    const btn = document.getElementById('ttsBtn');
+    btn.textContent = speechEnabled ? '🔊 TTS: ON' : '🔇 TTS: OFF';
+    btn.style.background = speechEnabled ? '#6ff' : '#444';
+    btn.style.color = speechEnabled ? '#000' : '#888';
+}
+
+async function speakText(text) {
+    if (!speechEnabled) return;
+    
+    try {
+        const encodedText = encodeURIComponent(text);
+        const audioUrl = `https://text.pollinations.ai/${encodedText}?model=openai-audio&voice=nova`;
+        
+        // Stop any currently playing audio
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+        
+        currentAudio = new Audio(audioUrl);
+        currentAudio.play();
+        
+    } catch (error) {
+        console.log('Speech playback failed:', error);
+    }
+}
+
+async function playSpeech() {
+    if (!speechEnabled) return;
+    
+    const text = currentNPC.dialogue;
+    speakText(text);
+}
+
+async function generateImage() {
+    const prompt = document.getElementById('imagePrompt').value;
+    if (!prompt.trim()) {
+        alert('Please enter a description for the image generation.');
+        return;
+    }
+    
+    const npc = currentNPC;
+    const fullPrompt = `${npc.npc_name} from ${npc.culture || 'fantasy'} world thinking about: ${prompt}, GameBoy pixel art style`;
+    
+    try {
+        const encodedPrompt = encodeURIComponent(fullPrompt);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&model=flux`;
+        
+        document.getElementById('generatedImage').innerHTML = '<div class="loading">Generating image...</div>';
+        
+        const img = new Image();
+        img.onload = function() {
+            document.getElementById('generatedImage').style.backgroundImage = `url('${imageUrl}')`;
+            document.getElementById('generatedImage').innerHTML = '';
+        };
+        img.onerror = function() {
+            document.getElementById('generatedImage').innerHTML = 'Image generation failed. Please try again.';
+        };
+        img.src = imageUrl;
+        
+    } catch (error) {
+        console.log('Image generation failed:', error);
+        document.getElementById('generatedImage').innerHTML = 'Image generation failed. Please try again.';
+    }
+}
+
+async function analyzeImage() {
+    const imageUrl = document.getElementById('analysisImageUrl').value;
+    if (!imageUrl.trim()) {
+        alert('Please enter an image URL.');
+        return;
+    }
+    
+    const npc = currentNPC;
+    
+    try {
+        document.getElementById('analysisResult').innerHTML = '<div class="loading">NPC is analyzing the image...</div>';
+        
+        const response = await fetch('https://text.pollinations.ai/openai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'openai',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are ${npc.npc_name}, a ${npc.archetype || 'character'} in therapy. Analyze this image from your character's perspective and explain what it makes you think about or how it relates to your existential crisis. Keep response under 100 words in a conversational therapy tone.`
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: 'What do you see in this image and what does it make you think about?' },
+                            { type: 'image_url', image_url: { url: imageUrl } }
+                        ]
+                    }
+                ],
+                max_tokens: 200
+            })
+        });
+        
+        const result = await response.json();
+        const analysis = result.choices[0].message.content;
+        
+        document.getElementById('analysisResult').innerHTML = `
+            <div style="background: rgba(102, 255, 255, 0.1); padding: 10px; border: 1px solid #6ff; font-size: 8px;">
+                <strong>${npc.npc_name}:</strong> ${analysis}
+            </div>
+        `;
+        
+        // Speak the response
+        if (speechEnabled) {
+            speakText(`${npc.npc_name} says: ${analysis}`);
+        }
+        
+    } catch (error) {
+        console.log('Image analysis failed:', error);
+        document.getElementById('analysisResult').innerHTML = 'Image analysis failed. Please try again.';
+    }
+}
+
+// Advanced features
+function checkTransference() {
+    if (currentNPC.transference_level > 50) {
+        showTransference();
+    } else {
+        const dialogue = document.getElementById('currentDialogue');
+        const noTransference = document.createElement('div');
+        noTransference.style.cssText = 'color: #666; font-size: 8px; font-style: italic; margin: 10px 0;';
+        noTransference.textContent = `${currentNPC.npc_name} maintains professional boundaries for now...`;
+        dialogue.appendChild(noTransference);
+    }
+}
+
+function checkFourthWall() {
+    if (currentNPC.fourth_wall_awareness > 75) {
+        showFourthWallBreak();
+    } else {
+        const dialogue = document.getElementById('currentDialogue');
+        const unaware = document.createElement('div');
+        unaware.style.cssText = 'color: #666; font-size: 8px; font-style: italic; margin: 10px 0;';
+        unaware.textContent = `${currentNPC.npc_name} seems unaware of their fictional nature...`;
+        dialogue.appendChild(unaware);
+    }
+}
+
+function triggerGlitch() {
+    const glitchScreen = document.getElementById('glitchScreen');
+    glitchScreen.style.display = 'flex';
+    
+    setTimeout(() => {
+        glitchScreen.style.display = 'none';
+        
+        const dialogue = document.getElementById('currentDialogue');
+        const metaContent = document.createElement('div');
+        metaContent.className = 'fourth-wall-break';
+        metaContent.innerHTML = `
+            <strong>SYSTEM:</strong> Reality distortion detected in therapy room. 
+            Patient may be experiencing existential breakthrough or complete system failure.
+        `;
+        dialogue.appendChild(metaContent);
+    }, 2000);
+}
+
+function triggerGlitchEffect() {
+    setTimeout(() => {
+        const glitchScreen = document.getElementById('glitchScreen');
+        glitchScreen.style.display = 'flex';
+        
+        setTimeout(() => {
+            glitchScreen.style.display = 'none';
+        }, 1000);
+    }, 500);
+}
+
+function analyzePlayerResponse() {
+    const response = document.getElementById('playerResponse').value;
+    if (!response.trim()) return;
+    
+    const empathyWords = ['understand', 'care', 'sorry', 'feel', 'support', 'help'];
+    const judgmentalWords = ['wrong', 'should', 'need to', 'fix', 'problem'];
+    const transferenceWords = ['love', 'beautiful', 'special', 'different', 'unique'];
+    
+    const empathyScore = empathyWords.filter(word => response.toLowerCase().includes(word)).length;
+    const judgmentScore = judgmentalWords.filter(word => response.toLowerCase().includes(word)).length;
+    const transferenceScore = transferenceWords.filter(word => response.toLowerCase().includes(word)).length;
+    
+    // Update emotional state based on response
+    if (empathyScore > judgmentScore) {
+        emotionalState.hope += 10;
+        currentNPC.transference_level += 5;
+    } else if (judgmentScore > empathyScore) {
+        emotionalState.rage += 10;
+    }
+    
+    if (transferenceScore > 0) {
+        currentNPC.transference_level += 15;
+    }
+    
+    applyEmotionalEffects({});
+    
+    // Show AI analysis of response
+    let analysis = '';
+    if (empathyScore > judgmentScore) {
+        analysis = `${currentNPC.npc_name} feels understood and supported by your response.`;
+    } else if (judgmentScore > empathyScore) {
+        analysis = `${currentNPC.npc_name} feels judged or criticized by your response.`;
+    } else {
+        analysis = `${currentNPC.npc_name} is uncertain how to interpret your response.`;
+    }
+    
+    if (transferenceScore > 0) {
+        analysis += ' They may be developing stronger feelings toward you.';
+    }
+    
+    document.getElementById('responseAnalysis').innerHTML = 
+        `<div style="background: rgba(102, 255, 255, 0.1); padding: 8px; font-size: 8px;">${analysis}</div>`;
+    
+    // Show NPC response
+    showNPCResponse({text: response}, 0);
+    
+    document.getElementById('playerResponse').value = '';
+}
+
+// Persistence
+function saveToLocalStorage() {
+    const gameData = {
+        npcs: npcs,
+        currentNPCIndex: currentNPCIndex,
+        fourthWallBreaks: fourthWallBreaks,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('npcTherapyUltimateCombined', JSON.stringify(gameData));
+}
+
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('npcTherapyUltimateCombined');
+    if (saved) {
+        try {
+            const gameData = JSON.parse(saved);
+            // Merge saved NPC notes
+            gameData.npcs.forEach((savedNPC, i) => {
+                if (savedNPC.notes && savedNPC.notes.length > 0 && npcs[i]) {
+                    npcs[i].notes = savedNPC.notes;
+                }
+            });
+            fourthWallBreaks = gameData.fourthWallBreaks || 0;
+        } catch (e) {
+            console.log('Error loading saved data:', e);
+        }
+    }
+}
+
+// Initialize
+loadFromLocalStorage();
+loadNotes();
+
+// Auto-save every 30 seconds
+setInterval(saveToLocalStorage, 30000);
+
+// Console messages
+console.log("🧠 NPC Therapy Ultimate Combined Edition loaded!");
+console.log("🌸 All features integrated: Immersive Flow + AI Features + Advanced Mechanics");
+console.log("🌟 Habitat transitions, emotional tracking, fourth wall breaks, transference");
+console.log("🎨 TTS, image generation, notebook system, custom NPCs");
+console.log("⚡ CRT filter, glitch effects, layered dialogue, cross-references");
+console.log("✅ FIXED: Question system, NPC sprites, dialogue responses, TTS integration");
+</script>
+</body>
+</html>
