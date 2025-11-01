@@ -50,25 +50,25 @@
   },
   "suites": [
     {
-      "title": "tests/test_dynamic_atmosphere.spec.ts",
-      "file": "tests/test_dynamic_atmosphere.spec.ts",
+      "title": "tests/test_meta_ending.spec.ts",
+      "file": "tests/test_meta_ending.spec.ts",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "NPC Therapy Game - Dynamic Atmosphere",
-          "file": "tests/test_dynamic_atmosphere.spec.ts",
+          "title": "NPC Therapy Game - Meta Ending",
+          "file": "tests/test_meta_ending.spec.ts",
           "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "should apply \"atmosphere-hopeful\" class when hope is high",
+              "title": "should trigger the meta ending after the secret patient session",
               "ok": false,
               "tags": [],
               "tests": [
                 {
-                  "timeout": 30000,
+                  "timeout": 60000,
                   "annotations": [],
                   "expectedStatus": "passed",
                   "projectId": "",
@@ -78,34 +78,34 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "timedOut",
-                      "duration": 30045,
+                      "duration": 60047,
                       "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
                       },
                       "errors": [
                         {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
                         },
                         {
                           "location": {
-                            "file": "/app/tests/test_dynamic_atmosphere.spec.ts",
-                            "column": 16,
-                            "line": 17
+                            "file": "/app/tests/test_meta_ending.spec.ts",
+                            "column": 22,
+                            "line": 38
                           },
-                          "message": "Error: page.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.question:has-text(\"What truth about yourself are you most afraid to speak aloud?\")')\u001b[22m\n\n\n  15 |   test('should apply \"atmosphere-hopeful\" class when hope is high', async ({ page }) => {\n  16 |     // Click the question that gives a big boost to 'hope'\n> 17 |     await page.click('.question:has-text(\"What truth about yourself are you most afraid to speak aloud?\")');\n     |                ^\n  18 |     \n  19 |     // The emotional state update is animated, so wait a bit for the class to be applied\n  20 |     await page.waitForTimeout(500); \n    at /app/tests/test_dynamic_atmosphere.spec.ts:17:16"
+                          "message": "Error: page.click: Test timeout of 60000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"Ask New Questions\")')\u001b[22m\n\u001b[2m    - locator resolved to <button disabled class=\"control-btn\" id=\"nextQuestionBtn\" onclick=\"askTherapyQuestion()\">Ask New Questions</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not enabled\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    109 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m        - element is not enabled\u001b[22m\n\u001b[2m      - retrying click action\u001b[22m\n\u001b[2m        - waiting 500ms\u001b[22m\n\n\n  36 |         // The 'Ask New Questions' button is used to proceed after each question, except the last one\n  37 |         if (i < 4) {\n> 38 |           await page.click('button:has-text(\"Ask New Questions\")');\n     |                      ^\n  39 |         }\n  40 |       }\n  41 |       \n    at completeFullSession (/app/tests/test_meta_ending.spec.ts:38:22)\n    at /app/tests/test_meta_ending.spec.ts:51:5"
                         }
                       ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-10-31T23:11:49.593Z",
+                      "startTime": "2025-11-01T01:47:00.908Z",
                       "annotations": [],
                       "attachments": [
                         {
                           "name": "error-context",
                           "contentType": "text/markdown",
-                          "path": "/app/test-results/tests-test_dynamic_atmosph-a396c-ful-class-when-hope-is-high/error-context.md"
+                          "path": "/app/test-results/tests-test_meta_ending-NPC-78748--the-secret-patient-session/error-context.md"
                         }
                       ]
                     }
@@ -113,129 +113,9 @@
                   "status": "unexpected"
                 }
               ],
-              "id": "63381d8aa0ca2d435092-fcd4e2b561e7ed4165f3",
-              "file": "tests/test_dynamic_atmosphere.spec.ts",
-              "line": 15,
-              "column": 7
-            },
-            {
-              "title": "should apply \"atmosphere-enraged\" class when rage is high",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 1,
-                      "parallelIndex": 0,
-                      "status": "timedOut",
-                      "duration": 30043,
-                      "error": {
-                        "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                        "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                      },
-                      "errors": [
-                        {
-                          "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                        },
-                        {
-                          "location": {
-                            "file": "/app/tests/test_dynamic_atmosphere.spec.ts",
-                            "column": 16,
-                            "line": 28
-                          },
-                          "message": "Error: page.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.question:has-text(\"When the world moves on without you, where do you find yourself?\")')\u001b[22m\n\n\n  26 |   test('should apply \"atmosphere-enraged\" class when rage is high', async ({ page }) => {\n  27 |     // This question should increase rage.\n> 28 |     await page.click('.question:has-text(\"When the world moves on without you, where do you find yourself?\")');\n     |                ^\n  29 |     await page.waitForTimeout(500);\n  30 |\n  31 |     const officeBg = await page.locator('.therapy-office-bg');\n    at /app/tests/test_dynamic_atmosphere.spec.ts:28:16"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-31T23:12:20.805Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/app/test-results/tests-test_dynamic_atmosph-4bab7-ged-class-when-rage-is-high/error-context.md"
-                        }
-                      ]
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "63381d8aa0ca2d435092-7fe55ac5528223d3c672",
-              "file": "tests/test_dynamic_atmosphere.spec.ts",
-              "line": 26,
-              "column": 7
-            },
-            {
-              "title": "should apply \"atmosphere-serene\" class when acceptance is high",
-              "ok": false,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "",
-                  "projectName": "",
-                  "results": [
-                    {
-                      "workerIndex": 2,
-                      "parallelIndex": 0,
-                      "status": "failed",
-                      "duration": 5986,
-                      "error": {
-                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.therapy-office-bg')\nExpected pattern: \u001b[32m/atmosphere-serene/\u001b[39m\nReceived string:  \u001b[31m\"therapy-office-bg\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.therapy-office-bg')\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg fade-in\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg fade-in\"\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg\"\u001b[22m\n",
-                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.therapy-office-bg')\nExpected pattern: \u001b[32m/atmosphere-serene/\u001b[39m\nReceived string:  \u001b[31m\"therapy-office-bg\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.therapy-office-bg')\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg fade-in\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg fade-in\"\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg\"\u001b[22m\n\n    at /app/tests/test_dynamic_atmosphere.spec.ts:41:28",
-                        "location": {
-                          "file": "/app/tests/test_dynamic_atmosphere.spec.ts",
-                          "column": 28,
-                          "line": 41
-                        },
-                        "snippet": "  39 |\n  40 |     const officeBg = await page.locator('.therapy-office-bg');\n> 41 |     await expect(officeBg).toHaveClass(/atmosphere-serene/);\n     |                            ^\n  42 |   });\n  43 | });\n  44 |"
-                      },
-                      "errors": [
-                        {
-                          "location": {
-                            "file": "/app/tests/test_dynamic_atmosphere.spec.ts",
-                            "column": 28,
-                            "line": 41
-                          },
-                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.therapy-office-bg')\nExpected pattern: \u001b[32m/atmosphere-serene/\u001b[39m\nReceived string:  \u001b[31m\"therapy-office-bg\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.therapy-office-bg')\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg fade-in\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg fade-in\"\u001b[22m\n\u001b[2m    4 × locator resolved to <div class=\"therapy-office-bg\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"therapy-office-bg\"\u001b[22m\n\n\n  39 |\n  40 |     const officeBg = await page.locator('.therapy-office-bg');\n> 41 |     await expect(officeBg).toHaveClass(/atmosphere-serene/);\n     |                            ^\n  42 |   });\n  43 | });\n  44 |\n    at /app/tests/test_dynamic_atmosphere.spec.ts:41:28"
-                        }
-                      ],
-                      "stdout": [],
-                      "stderr": [],
-                      "retry": 0,
-                      "startTime": "2025-10-31T23:12:51.947Z",
-                      "annotations": [],
-                      "attachments": [
-                        {
-                          "name": "error-context",
-                          "contentType": "text/markdown",
-                          "path": "/app/test-results/tests-test_dynamic_atmosph-4fee2-ass-when-acceptance-is-high/error-context.md"
-                        }
-                      ],
-                      "errorLocation": {
-                        "file": "/app/tests/test_dynamic_atmosphere.spec.ts",
-                        "column": 28,
-                        "line": 41
-                      }
-                    }
-                  ],
-                  "status": "unexpected"
-                }
-              ],
-              "id": "63381d8aa0ca2d435092-4753e792380f04209cab",
-              "file": "tests/test_dynamic_atmosphere.spec.ts",
-              "line": 35,
+              "id": "a8b70f33e5fa09f04616-15eddf9548fecc99d15e",
+              "file": "tests/test_meta_ending.spec.ts",
+              "line": 8,
               "column": 7
             }
           ]
@@ -245,11 +125,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-10-31T23:11:45.560Z",
-    "duration": 72563.16900000001,
+    "startTime": "2025-11-01T01:46:57.473Z",
+    "duration": 63678.989,
     "expected": 0,
     "skipped": 0,
-    "unexpected": 3,
+    "unexpected": 1,
     "flaky": 0
   }
 }

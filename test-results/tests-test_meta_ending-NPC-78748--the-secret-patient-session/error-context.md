@@ -1,12 +1,12 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
+- generic [active] [ref=e1]:
   - button "📜 CREDITS" [ref=e2] [cursor=pointer]
   - generic [ref=e5]:
     - 'button "🔊 TTS: ON" [ref=e7] [cursor=pointer]'
     - generic [ref=e9]:
-      - generic [ref=e10]: Session 1 of 47
+      - generic [ref=e10]: Session 47 of 48
       - generic [ref=e11]: "Questions asked: 1/5"
       - generic [ref=e12]: "Layer: Surface"
     - generic [ref=e13]:
@@ -20,10 +20,10 @@
         - generic [ref=e28]: "Choose your therapeutic approach:"
         - generic [ref=e29] [cursor=pointer]:
           - generic [ref=e30]: EMPATHETIC
-          - generic [ref=e31]: In your quietest moments, what do you dream of?
+          - generic [ref=e31]: What weight do you carry that no one else can see?
         - generic [ref=e32] [cursor=pointer]:
           - generic [ref=e33]: CHALLENGING
-          - generic [ref=e34]: What weight do you carry that no one else can see?
+          - generic [ref=e34]: In your quietest moments, what do you dream of?
         - generic [ref=e35] [cursor=pointer]:
           - generic [ref=e36]: INSIGHTFUL
           - generic [ref=e37]: What truth about yourself are you most afraid to speak aloud?
@@ -33,7 +33,7 @@
     - generic [ref=e41]:
       - button "Ask New Questions" [disabled] [ref=e42]
       - button "End Session" [disabled] [ref=e43]
-      - button "Continue" [active] [ref=e44] [cursor=pointer]
+      - button "Continue" [ref=e44] [cursor=pointer]
   - iframe
   - generic [ref=e45]:
     - button "−" [ref=e46] [cursor=pointer]

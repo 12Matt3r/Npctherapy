@@ -915,6 +915,49 @@
             box-shadow: 0 0 30px rgba(102, 255, 255, 0.8);
             border-color: #8ff;
         }
+
+        /* New styles for the meta ending */
+        #metaEnding {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 20000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .ending-text {
+            font-size: 12px;
+            max-width: 700px;
+            text-align: center;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+        }
+
+        #sprite-canvas {
+            width: 800px;
+            height: 600px;
+            position: relative;
+        }
+
+        .ending-sprite {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+        }
     </style>
 </head>
 <body>
@@ -4085,6 +4128,12 @@ function endSession() {
 }
 
 function nextNPC() {
+    // Check if the last session was with the secret patient
+    if (currentNPC.id === 99) {
+        triggerMetaEnding();
+        return;
+    }
+
     currentNPCIndex++;
     if (currentNPCIndex >= npcs.length) {
         // Game complete
@@ -4897,6 +4946,88 @@ document.addEventListener('click', (e) => {
 });
 
 console.log("📜 Credits modal with clickable AI service links added!");
+
+function triggerMetaEnding() {
+    // Hide everything else
+    document.getElementById('gameContainer').style.display = 'none';
+    document.getElementById('creditsModal').style.display = 'none';
+    document.querySelector('.credits-btn').style.display = 'none';
+    document.getElementById('musicPlayer').style.display = 'none';
+
+    const endingScreen = document.getElementById('metaEnding');
+    endingScreen.style.display = 'flex';
+
+    const text1 = document.getElementById('ending-text-1');
+    const text2 = document.getElementById('ending-text-2');
+    const spriteCanvas = document.getElementById('sprite-canvas');
+
+    // Sequence
+    setTimeout(() => {
+        text1.style.opacity = 1;
+    }, 1000);
+
+    setTimeout(() => {
+        text1.style.opacity = 0;
+    }, 6000);
+
+    setTimeout(() => {
+        // Show all NPC sprites randomly on the canvas
+        npcs.forEach((npc, index) => {
+            if (npc.sprite) {
+                const sprite = document.createElement('div');
+                sprite.className = 'ending-sprite';
+                sprite.style.backgroundImage = `url('${npc.sprite}')`;
+                sprite.style.left = `${Math.random() * 90}%`;
+                sprite.style.top = `${Math.random() * 90}%`;
+                spriteCanvas.appendChild(sprite);
+
+                setTimeout(() => {
+                    sprite.style.opacity = 1;
+                    sprite.style.transition = 'all 2s ease-in-out';
+                }, index * 100);
+            }
+        });
+    }, 7000);
+
+    setTimeout(() => {
+        // Converge all sprites to the center
+        const sprites = document.querySelectorAll('.ending-sprite');
+        sprites.forEach(sprite => {
+            sprite.style.left = '50%';
+            sprite.style.top = '50%';
+            sprite.style.transform = 'translate(-50%, -50%) scale(0)';
+            sprite.style.opacity = 0;
+        });
+    }, 12000);
+
+    setTimeout(() => {
+        // Show the final glitched therapist sprite
+        const finalSprite = document.createElement('div');
+        finalSprite.className = 'ending-sprite';
+        finalSprite.style.backgroundImage = `url('imgs/glitched_therapist_sprite.png')`;
+        finalSprite.style.left = '50%';
+        finalSprite.style.top = '50%';
+        finalSprite.style.transform = 'translate(-50%, -50%) scale(2)';
+        finalSprite.style.animation = 'glitch-shake 0.5s infinite';
+        spriteCanvas.appendChild(finalSprite);
+        finalSprite.style.opacity = 1;
+
+    }, 14000);
+
+    setTimeout(() => {
+        text2.style.opacity = 1;
+    }, 15000);
+}
 </script>
+<!-- New HTML for the meta ending -->
+<div id="metaEnding">
+    <div class="ending-text" id="ending-text-1">
+        You have healed them all. Or have you?
+    </div>
+    <div id="sprite-canvas"></div>
+    <div class="ending-text" id="ending-text-2" style="margin-top: 30px;">
+        You were not the therapist. You were the patient, talking to the fragmented pieces of yourself, trying to become whole again.
+    </div>
+</div>
 </body>
 </html>
