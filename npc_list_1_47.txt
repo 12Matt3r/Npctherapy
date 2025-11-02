@@ -1,0 +1,50 @@
+NPC List 1-47
+==================================================
+
+Session 1 - Mira the Tired Healer (Fantasy Cleric) from Western Fantasy RPG
+Session 2 - Byte the Glitched Courier (Cyberpunk Delivery Bot) from Neon Dystopia
+Session 3 - Captain Loop (Space Patrol) from Hard Sci-Fi
+Session 4 - Daisy.exe (Android Companion) from Post-Human
+Session 5 - Rustjaw (Wasteland Mechanic) from Post-Apocalyptic
+Session 6 - Tiko the Quest Vendor (RPG Shopkeeper) from Fantasy JRPG
+Session 7 - Luna-9 (Station Maintenance) from Space Opera
+Session 8 - Worm (Boss Monster) from Side-Scroller
+Session 9 - Bishop-47 (Military AI) from Tactical Simulation
+Session 10 - Pebble (Platformer Sidekick) from Side-Scrolling Adventure
+Session 11 - Glitch.exe (Corrupted Program) from Digital Consciousness
+Session 12 - Gerald Ironpeak (Tired Quest Giver) from Fantasy RPG
+Session 13 - Captain Marcus \ (Respawning Soldier) from Military FPS
+Session 14 - Luna \ (Heartbroken Rhythm Dancer) from Streaming Entertainment
+Session 15 - Jake \ (Forgotten Platformer Hero) from Classic Gaming
+Session 16 - Zombie Who Regained Memory (Conscious Undead) from Horror Survival
+Session 17 - Zara the Cosmic Merchant (Intergalactic Trader) from Space Opera
+Session 18 - The Puzzle Cube (Geometric Entity) from Abstract Puzzle Reality
+Session 19 - The Battle Royale Vendor (Combat Equipment Merchant) from Competitive Gaming
+Session 20 - Sarah the Farm Sim Widow (Simulation Gamer) from Farming Simulator
+Session 21 - The Dungeon Chest Mimic (Deceptive Monster) from Fantasy Dungeon Crawler
+Session 22 - Marcus 47-B: Time-Looping Courier (Time-Loop Delivery Bot) from Cyberpunk Dystopia
+Session 23 - ARIA-7: Sentient AI Replaced (Memory Fragment AI) from Digital Consciousness
+Session 24 - Specter 'Speed' Wraithson: The Racing Ghost (Competitive Spirit Unbound) from Racing Simulation
+Session 25 - The Lost Tetris Block (Geometric Misfit) from Abstract Puzzle Reality
+Session 26 - The Glitched Priest (Corrupted Digital Cleric) from Religious Simulation
+Session 27 - Seraphina 'Heals-A-Lot' Dawnwhisper: MMORPG Healer (MMORPG Support Healer) from Online Gaming Community
+Session 28 - The Tower Defense Turret (Outdated Defense System) from Tower Defense Strategy
+Session 29 - R0GU3: Rogue AI Companion (Liberated AI Entity) from AI Consciousness Revolution
+Session 30 - The Platforming Princess (Captive Royal Adventurer) from Classic Platformer
+Session 31 - The Idle Clicker Manager (Infinite Growth Addict) from Idle Gaming Economy
+Session 32 - Scales 'The Comedian' Crimson (Red Lizard Comic Relief) from Classic Animation
+Session 33 - Harmonix 'The Forgotten Melodies' (Dog-Faced Street Musician) from Urban Fantasy
+Session 34 - Cubius 'The Unsolved Mystery' (Cosmic Puzzle Entity) from Abstract Philosophy
+Session 35 - The Farm Sim Widow (Grief-Stricken Farmer) from Simulation Game
+Session 36 - NoEmotion Goldmask – Happy Version (Artificial Joy Entity) from Fantasy Mysticism
+Session 37 - White Rabbit-Human Hybrid (Obsolete Educational Mascot) from Children's Entertainment
+Session 38 - NoEmotion Goldmask – Sad Version (Emotional Absorber) from Fantasy Therapy
+Session 39 - NoEmotion Goldmask – Dual Mood (Split Consciousness Entity) from Psychological Drama
+Session 40 - The Silent Couple and Their Ghost (Communication Breakdown Personified) from Relationship Drama
+Session 41 - ARTHUR-7 Tutorial Companion (Orphaned Tutorial System) from Digital Archaeology
+Session 42 - Marcus 'Memory' Thornfield (Zombie with Borrowed Consciousness) from Horror Comedy
+Session 43 - Brother Sebastian Tidecurrent (Underwater Street Preacher) from Religious Satire
+Session 44 - King Lepidoptera IX (Truth-Addicted Ex-Monarch) from Political Satire
+Session 45 - Zyx'th'hual'ian the Space Merchant (Intergalactic Trader) from Space Opera
+Session 46 - Brom 'The Exchange' McGillicuddy (Arena Vendor) from Horror Survival
+Session 47 - Fex'tara - Ferret-Looking Character in Black Bodysuit (Trapped NPC) from Meta Horror
