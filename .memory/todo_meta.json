@@ -3,8 +3,8 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Replace GitHub images with workspace versions",
-        "details": "1. ✅ Downloaded/verified GitHub structure. 2. ✅ Organized workspace images to match GitHub structure. 3. ✅ Created new branch 'update-images-1762061738'. 4. ✅ Prepared files for push (141+ PNG images ready). 5. ⚠️ Need authentication to push to GitHub",
+        "content": "Rename GitHub repository files from IMG_#### to npc_list_###",
+        "details": "1. ✅ Analyzed current GitHub file structure. 2. ✅ Identified naming pattern (IMG_8801.png to IMG_8954.png). 3. ✅ Plan to rename to npc_list_001.png through npc_list_047.png. 4. 🔄 Execute renaming in both therapy_office and character_habitats directories. 5. Commit and push changes to GitHub.",
         "status": "in_progress",
         "priority": "high"
       },
