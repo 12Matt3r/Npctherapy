@@ -3,9 +3,9 @@
     "Coordinator": {
       "1": {
         "id": "1",
-        "content": "Organize NPC Therapy game images for GitHub repository",
-        "details": "1. Collect all images from /workspace/Npctherapy/imgs/ directory. 2. Organize into categories (therapy_office/, character_habitats/, etc.). 3. Ensure all image files are properly named and structured.",
-        "status": "pending",
+        "content": "Download and replace NPC Therapy images from GitHub",
+        "details": "1. Download therapy_office images from https://github.com/12Matt3r/Npctherapy/tree/master/imgs/therapy_office. 2. Download character_habitats images from https://github.com/12Matt3r/Npctherapy/tree/master/imgs/character_habitats. 3. Replace existing images in workspace. 4. Clean up all other image files outside these folders.",
+        "status": "in_progress",
         "priority": "high"
       },
       "2": {
