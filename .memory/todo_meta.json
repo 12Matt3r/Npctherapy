@@ -1,0 +1,27 @@
+{
+  "todos": {
+    "Coordinator": {
+      "1": {
+        "id": "1",
+        "content": "Organize NPC Therapy game images for GitHub repository",
+        "details": "1. Collect all images from /workspace/Npctherapy/imgs/ directory. 2. Organize into categories (therapy_office/, character_habitats/, etc.). 3. Ensure all image files are properly named and structured.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "2": {
+        "id": "2",
+        "content": "Create GitHub repository structure",
+        "details": "1. Initialize git repository. 2. Create proper README.md with image descriptions. 3. Set up directory structure for images. 4. Add .gitignore if needed.",
+        "status": "pending",
+        "priority": "high"
+      },
+      "3": {
+        "id": "3",
+        "content": "Push images to GitHub repository",
+        "details": "1. Add all image files to git. 2. Commit with descriptive messages. 3. Push to GitHub (user will provide repo URL or I'll create one). 4. Verify all images are properly uploaded.",
+        "status": "pending",
+        "priority": "high"
+      }
+    }
+  }
+}
